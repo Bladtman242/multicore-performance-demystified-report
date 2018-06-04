@@ -1,0 +1,68 @@
+\documentclass[a4paper, titlepage]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{courier} % Required for the courier font
+\usepackage[bookmarks]{hyperref}
+\usepackage{graphicx}
+\usepackage{filecontents}
+\usepackage{tikz}
+\usepackage{pgf}
+\usepackage{pgfplotstable}
+\usepackage{pgfplots}
+\usepackage{amsfonts}
+
+
+
+%redefine percentage sign to be a little smaller
+\let\oldpct\%
+\renewcommand{\%}{\scalebox{.9}{\oldpct}}
+
+\setcounter{secnumdepth}{0}
+\begin{document}
+
+\title{Multicore performance demystified}
+\author{
+	Sigurt Bladt Dinesen
+	\\\texttt{sidi@itu.dk}
+	\and
+	Advisor:
+	\\Peter Sestoft
+}
+
+\maketitle
+\tableofcontents
+\clearpage
+
+\section{Introduction+abstract}
+\section{How to read this report}
+\section{Background}
+
+\section{Machine architecture for software designers (focus on memory hierarchy and coherency)}
+
+\section{Java and memory (include JOL tool)}
+
+\section{Memory operations are expensive (may be "the new FLOPS")}
+\subsection{Refer bench-marks: (cyclic) Read-times vs simple math operation}
+
+\section{Method: benchmarking, limitations, and concessions (incl. background
+noise in bmarks, java/hw memory-layout impedance)}
+
+\section{The types of "time waste" in multicore programming}
+\subsection{"Cache-friendly" gets a new meaning}
+
+\section{Experiments}
+\subsection{Caches, MESI, store-buffers and invalidation queues (explanation and proof of false-sharing impact)}
+\subsubsection{toyproblems (local int-counters, contended int-counters)}
+\subsection{real problems (quicksort \{div-and-conquer\})}
+\subsection{real problems (kmeans, striped hashmap \{locking\})}
+\subsection{real problems (? \{lock-free cas-based\})}
+
+\begin{filecontents}{mybib.bib}
+\end{filecontents}
+
+\clearpage
+\bibliographystyle{unsrt}
+\bibliography{mybib.bib}
+
+\end{document}
+
