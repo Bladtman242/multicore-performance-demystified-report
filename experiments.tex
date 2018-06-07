@@ -1,0 +1,26 @@
+\section{Experiments}
+\subsubsection{Multicore Cache Performance}
+\mynote{\textbf{contents: SharedInt/contended, IntCounter, (parrallesability?)}}
+
+To see the potential impact of false sharing, it is illustrative to look at a
+few contrived example programs. 
+
+\subsubsection{Uncontented writes}
+The first example we examine illustrates the impact of false sharing by running
+simple, uncontented, integer-increment operations in parallel threads. To see
+the impact of false sharing, we observe the performance of the program as a
+function of the distance between the integers in memory.
+
+\mynote{add code excerpt around here}
+
+Each thread performs millions of integer-increments. The integers are
+uncontented; each thread has its own integer and performs no read or write
+operations to integers used by the other threads. Since the integers are
+uncontented, we will take the difference in performance to be a result of
+unnecessary coherence overhead due to false sharing.
+
+\mynote{include plots (barrier and no) re-written as ns-per-increment}
+
+\subsection{real problems (quicksort \{div-and-conquer\})}
+\subsection{real problems (kmeans, striped hashmap \{locking\})}
+\subsection{real problems (? \{lock-free cas-based\})}

@@ -10,12 +10,16 @@
 \usepackage{pgfplotstable}
 \usepackage{pgfplots}
 \usepackage{amsfonts}
+\usepackage{xcolor}
 
 
 
 %redefine percentage sign to be a little smaller
 \let\oldpct\%
 \renewcommand{\%}{\scalebox{.9}{\oldpct}}
+
+%todo/notes command
+\newcommand\mynote[1]{\textcolor{red}{#1}}
 
 \setcounter{secnumdepth}{0}
 \begin{document}
@@ -38,6 +42,8 @@
 \section{Background}
 
 \section{Machine architecture for software designers (focus on memory hierarchy and coherency)}
+\subsection{readtimes plots go here.}
+\subsection{Caches, MESI, store-buffers and invalidation queues (explanation and proof of false-sharing impact)}
 
 \section{Java and memory (include JOL tool)}
 
@@ -50,12 +56,8 @@ noise in bmarks, java/hw memory-layout impedance)}
 \section{The types of "time waste" in multicore programming}
 \subsection{"Cache-friendly" gets a new meaning}
 
-\section{Experiments}
-\subsection{Caches, MESI, store-buffers and invalidation queues (explanation and proof of false-sharing impact)}
-\subsubsection{toyproblems (local int-counters, contended int-counters)}
-\subsection{real problems (quicksort \{div-and-conquer\})}
-\subsection{real problems (kmeans, striped hashmap \{locking\})}
-\subsection{real problems (? \{lock-free cas-based\})}
+\pagebreak
+\input{experiments.tex}
 
 \begin{filecontents}{mybib.bib}
 \end{filecontents}
