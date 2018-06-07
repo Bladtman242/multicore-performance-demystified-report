@@ -4,8 +4,8 @@ report.pdf: tmp/report.pdf
 tmp:
 	mkdir tmp
 
-tmp/report.pdf: report.tex tmp
+tmp/report.pdf: *.tex tmp
 	latexmk --output-directory=tmp -pdf
 
-preview: report.tex tmp
-	latexmk --output-directory=tmp -pdf -pvc
+preview: *.tex tmp
+	latexmk --output-directory=tmp -pdf -pvc report.tex
