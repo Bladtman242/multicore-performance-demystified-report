@@ -1,0 +1,7 @@
+counters-no-barrier-local 0     87158898.4 ns 1605430.45          4
+counters-no-barrier-local 4     76730864.8 ns  469668.13          4
+counters-no-barrier-local 8     76707044.2 ns  421320.45          4
+counters-no-barrier-local 16     76679817.2 ns  463021.85          4
+counters-no-barrier-local 32     76850830.7 ns  455102.13          4
+counters-no-barrier-local 64     76793988.7 ns  437364.71          4
+counters-no-barrier-local 128     76779066.8 ns  420341.59          4

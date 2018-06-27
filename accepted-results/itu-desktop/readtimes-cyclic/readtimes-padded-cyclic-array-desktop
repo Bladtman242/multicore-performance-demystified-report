@@ -1,0 +1,12 @@
+readtimes-padded-cyclic-array-desktop 8     84285708.8 ns  102083.33          4
+readtimes-padded-cyclic-array-desktop 16     84301559.0 ns  202420.17          4
+readtimes-padded-cyclic-array-desktop 32    109971803.5 ns  703510.97          4
+readtimes-padded-cyclic-array-desktop 64    146653701.3 ns 4157760.90          2
+readtimes-padded-cyclic-array-desktop 128    153594004.9 ns 2438565.81          2
+readtimes-padded-cyclic-array-desktop 256    252098645.5 ns 1708105.84          2
+readtimes-padded-cyclic-array-desktop 512    411515537.5 ns 1032054.58          2
+readtimes-padded-cyclic-array-desktop 1024    467748263.8 ns 1854209.00          2
+readtimes-padded-cyclic-array-desktop 2048    540144829.7 ns 3784328.93          2
+readtimes-padded-cyclic-array-desktop 4096    639355449.1 ns 1456144.37          2
+readtimes-padded-cyclic-array-desktop 8192   1238356660.8 ns 27521072.65          2
+readtimes-padded-cyclic-array-desktop 16384   2563553354.5 ns 11265896.30          2

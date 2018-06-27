@@ -1,0 +1,10 @@
+contended-writes-array-server 1    113197682.0 ns 7774737.22          4
+contended-writes-array-server 2    118756364.2 ns 9858435.51          2
+contended-writes-array-server 4    120567943.1 ns 7111430.23          2
+contended-writes-array-server 8    100006819.8 ns 2700838.98          4
+contended-writes-array-server 12    110384671.9 ns 10383538.23          4
+contended-writes-array-server 16    263702964.5 ns 36700915.23          2
+contended-writes-array-server 24    324869992.8 ns 6570507.17          2
+contended-writes-array-server 32    367791018.7 ns 4021682.13          2
+contended-writes-array-server 48    467738692.3 ns 8605529.73          2
+contended-writes-array-server 64    722750640.5 ns 27225257.51          2

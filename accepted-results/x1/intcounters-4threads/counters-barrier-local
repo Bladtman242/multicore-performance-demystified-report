@@ -1,0 +1,7 @@
+counters-barrier-local    0    471653778.1 ns 64972046.52          2
+counters-barrier-local    4    333796332.9 ns 71041834.53          2
+counters-barrier-local    8    101842646.7 ns 2928006.35          4
+counters-barrier-local    16    101584102.9 ns 2209198.26          4
+counters-barrier-local    32    101488635.0 ns 3626527.06          4
+counters-barrier-local    64    100954992.9 ns 2130230.00          4
+counters-barrier-local    128    100771603.8 ns 2307062.46          4

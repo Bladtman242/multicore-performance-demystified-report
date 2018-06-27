@@ -1,0 +1,7 @@
+counters-no-barrier-local-server 0     78586165.1 ns 5564513.74          4
+counters-no-barrier-local-server 4     67648615.2 ns 2206297.83          4
+counters-no-barrier-local-server 8     65513921.0 ns  335147.41          4
+counters-no-barrier-local-server 16     65383320.2 ns  347952.13          4
+counters-no-barrier-local-server 32     65444139.6 ns  316484.29          4
+counters-no-barrier-local-server 64     65531130.5 ns  331800.66          4
+counters-no-barrier-local-server 128     65438208.6 ns  396438.88          4

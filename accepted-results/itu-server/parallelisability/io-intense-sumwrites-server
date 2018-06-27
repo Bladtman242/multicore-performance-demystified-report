@@ -1,0 +1,10 @@
+io-intense-sumwrites-server 1   1573726737.6 ns 35425046.32          2
+io-intense-sumwrites-server 2    838528290.5 ns 7316365.55          2
+io-intense-sumwrites-server 4    584910375.4 ns 2971361.43          2
+io-intense-sumwrites-server 8    565861208.8 ns  290272.15          2
+io-intense-sumwrites-server 16    569684169.8 ns 1670450.79          2
+io-intense-sumwrites-server 32    513706138.9 ns 1298668.18          2
+io-intense-sumwrites-server 64    504640195.0 ns 1346022.68          2
+io-intense-sumwrites-server 12    566921007.8 ns  344075.31          2
+io-intense-sumwrites-server 24    564599046.6 ns 3626291.05          2
+io-intense-sumwrites-server 48    503601203.5 ns  848640.66          2

@@ -11,6 +11,7 @@
 \usepackage{pgfplots}
 \usepackage{amsfonts}
 \usepackage{xcolor}
+\usepackage[numbers]{natbib}
 
 
 
@@ -19,7 +20,10 @@
 \renewcommand{\%}{\scalebox{.9}{\oldpct}}
 
 %todo/notes command
-\newcommand\mynote[1]{\textcolor{red}{#1}}
+\newcommand\mynote[1]{\textcolor{red}{\{#1\}}}
+
+%java name styling
+\newcommand\java[1]{\texttt{#1}}
 
 \setcounter{secnumdepth}{0}
 \begin{document}
@@ -29,7 +33,7 @@
 	Sigurt Bladt Dinesen
 	\\\texttt{sidi@itu.dk}
 	\and
-	Advisor:
+	Supervisor:
 	\\Peter Sestoft
 }
 
@@ -37,34 +41,37 @@
 \tableofcontents
 \clearpage
 
-\section{Introduction+abstract}
-\section{How to read this report}
-\section{Background}
+\input{introduction.tex}
 
-\section{Machine architecture for software designers (focus on memory hierarchy and coherency)}
-\subsection{readtimes plots go here.}
-\subsection{Caches, MESI, store-buffers and invalidation queues (explanation and proof of false-sharing impact)}
+\section{Machine architecture for software designers }
+\mynote{(focus on memory hierarchy and coherency)}
+\mynote{readtimes plots go here.}
+\mynote{Caches, MESI, store-buffers and invalidation queues (explanation and proof of false-sharing impact)}
 
-\section{Java and memory (include JOL tool)}
+\section{Java and memory}
+\mynote{Explain relevant details of java memory layout, to the point where the
+Method section can refer back here to say that we can't fully control the layout
+for our benchmarks}
+\mynote{Use and introduce the JOL tool}
 
-\section{Memory operations are expensive (may be "the new FLOPS")}
-\subsection{Refer bench-marks: (cyclic) Read-times vs simple math operation}
+\section{Memory operations are expensive}
+\mynote{(may be "the new FLOPS")}
+\mynote{Refer to bench-marks: (cyclic) Read-times vs simple math operation}
 
-\section{Method: benchmarking, limitations, and concessions (incl. background
+\section{Method}
+\mynote{benchmarking, limitations, and concessions (incl. background
 noise in bmarks, java/hw memory-layout impedance)}
 
 \section{The types of "time waste" in multicore programming}
-\subsection{"Cache-friendly" gets a new meaning}
+\mynote{"Cache-friendly" gets a new meaning}
 
-\pagebreak
 \input{experiments.tex}
 
-\begin{filecontents}{mybib.bib}
-\end{filecontents}
+\section{Advice for Multicore Programmers}
 
 \clearpage
-\bibliographystyle{unsrt}
-\bibliography{mybib.bib}
+\nocite{*}
+\bibliographystyle{unsrtnat}
+\bibliography{ref.bib}
 
-\end{document}
-
+\end{document} 

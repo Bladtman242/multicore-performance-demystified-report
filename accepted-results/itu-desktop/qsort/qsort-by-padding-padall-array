@@ -1,0 +1,7 @@
+qsort-by-padding-padall-array 0    104336475.7 ns 2135509.62          4
+qsort-by-padding-padall-array 4    105664043.4 ns 1794046.86          4
+qsort-by-padding-padall-array 8    109204173.6 ns 2311325.50          4
+qsort-by-padding-padall-array 16    118404491.6 ns 1849616.94          4
+qsort-by-padding-padall-array 32    158927716.8 ns 21657528.64          2
+qsort-by-padding-padall-array 64    232685945.9 ns 3842827.84          2
+qsort-by-padding-padall-array 128    345932019.3 ns 93731995.26          2

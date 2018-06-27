@@ -1,0 +1,3 @@
+kmeans-q-paddedcluster    1   8089117402.7 ns 1257277222.73          2
+kmeans-q-paddedcluster    2   7523176289.2 ns 2431149777.40          2
+kmeans-q-paddedcluster    4   7056003619.1 ns 3068497480.11          2

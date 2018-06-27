@@ -1,26 +1,155 @@
 \section{Experiments}
-\subsubsection{Multicore Cache Performance}
-\mynote{\textbf{contents: SharedInt/contended, IntCounter, (parrallesability?)}}
+\mynote{Note high std dev where relevant}
+\subsection{Multicore Cache Performance}
+\mynote{\textbf{contents: (parrallelisability?)}}
 
 To see the potential impact of false sharing, it is illustrative to look at a
-few contrived example programs. 
+few contrived example programs. In this section we look at a handful of
+variations of programs that perform integer-increment operations in a multi core
+setting.
 
-\subsubsection{Uncontented writes}
+\subsubsection{Uncontended Writes}
 The first example we examine illustrates the impact of false sharing by running
-simple, uncontented, integer-increment operations in parallel threads. To see
-the impact of false sharing, we observe the performance of the program as a
-function of the distance between the integers in memory.
+simple, uncontended, integer-increment operations in parallel threads. To see
+the impact of false sharing, we observe the time it takes to perform an
+increment as a function of the distance between the integers in memory.
 
 \mynote{add code excerpt around here}
 
 Each thread performs millions of integer-increments. The integers are
-uncontented; each thread has its own integer and performs no read or write
-operations to integers used by the other threads. Since the integers are
-uncontented, we will take the difference in performance to be a result of
-unnecessary coherence overhead due to false sharing.
+uncontended; each thread has its own integer and performs no read or write
+operations to integers used by the other threads. Since each thread operates on
+its own integer, there is no need for synchronization. Nonetheless, we perform
+the experiment in variants with and without volatile integer declarations, to
+see the performance impact in both cases.
 
-\mynote{include plots (barrier and no) re-written as ns-per-increment}
+Since the integers are uncontended, we will take the difference in performance
+to be a result of unnecessary coherence overhead due to false sharing.
 
-\subsection{real problems (quicksort \{div-and-conquer\})}
-\subsection{real problems (kmeans, striped hashmap \{locking\})}
-\subsection{real problems (? \{lock-free cas-based\})}
+In the experiments with volatile integers, each thread performs 6M increments.
+In the experiments without volatile, each thread performs 66M increments. The
+experiments are run with 4, 8, and 48 threads on the i5, i7, and xeon platforms,
+respectively.
+
+Figure \ref{fig:uncont} and \ref{fig:uncont-nob} show the average time per
+increment.
+
+\mynote{Include concrete parameters: work is not divided between threads, but is
+additive, lap/desk/serv performs x,y,z ops..}
+
+\begin{figure}[hbpt]
+\graphicspath{{plots/}}
+\input{plots/nobarrier.tex}
+\caption{Uncontended integer-increments. Nanoseconds per increment, as a
+function of padding in bytes.}
+\label{fig:uncont}
+\end{figure}
+
+\begin{figure}[hbpt]
+\graphicspath{{plots/}}
+\input{plots/barrier.tex}
+\caption{Uncontended integer-increments on volatile integers. Nanoseconds per
+increment, as a function of padding in bytes.}
+\label{fig:uncont-nob}
+\end{figure}
+
+\mynote{Add explanation of the different plots (array/local,
+barrier/no-barrier), include values of plots (plots are hard to read), and
+reflect/conclude}
+
+\subsubsection{Contended Writes}
+
+In the previous section we examined the performance of uncontended memory
+operations to see the existence and cost of false sharing. In this section, we
+shall see that observing the performance of contended memory operations - where
+coherence overhead is strictly necessary - can be just as illustrative.
+
+\mynote{include code snippet}
+
+The program is similar to \mynote{reference uncontended snippet}, but in this version all threads operate on a single, shared integer. Like in the previous
+section, we run two versions of the experiment: One where the integer is
+volatile, and one where it is not. As this experiment uses a shared integer,
+there is no need to store it in an array. However, plots using a single-element
+array are included, to show that the behaviour is not significantly affected by
+this change.
+
+An additional experiment is included here, running an additional thread that
+only reads the integer. It allows us to see that, perhaps contrary to intuition,
+read operations in a multicore setting also incur a coherency overhead.
+
+\mynote{include getter/stop code snippet}
+
+We need the reading thread to run for the full duration of the experiment. To
+that end, the thread does not perform a predetermined number of operations, but
+is started before the others, and terminated only when the others are
+finished. This incurs an overhead, as the thread needs to be stopped before the
+benchmark finishes! However, an additional experiment has shown that the time it
+takes to stop a thread is far too small to significantly skew our results.
+
+\mynote{include table of numbers (they are 833.4$\pm$2.82, 1940.5$\pm$58.12,
+and 1256.7$\pm$13.59 ns)})
+
+\mynote{include plots as ns-per-operation, concrete numbers/factors, and
+discussion/conclusion on the results, concrete parameters: work not divided..}
+
+\mynote{Konklusioner: Læsning er ikke gratis(!), pris for contended writes (både
+med og uden barrier/volatile) siger en del om MESI pris (1 vs 2 tråde er
+illustrativt), indikerer (løst) pris af at smide en cache-line frem og tilbage
+mellem kerner}
+
+
+\subsection{Practical Applications}
+We rarely make software that simply increments counters, it is therefore useful
+to see the effects of false sharing in more complicated applications as well.
+
+In this section we examine false sharing in 4 \mynote{Update if it doesn't
+end up 4} parallel programs. We use Quicksort as an example of the divide and
+conquer paradigm, where the division of subproblems limit the need for
+synchronization. We take k-means clustering and a striped hashmap implementation
+as examples of locking applications. Finally, we \mynote{more problems go here
+when found}
+
+\subsubsection{Divide and Conquer \mynote{avoidance? Quicksort}}
+A famous example of a divide-and-conquer algorithm, quicksort recursively
+divides the sorting problem into independent subproblems, combining partial
+results into a solution for the whole problem. With respect to synchronization,
+we can see this problem division as a kind of avoidance: If the sub-problems are
+independent, they can be solved in parallel on a multicore system without any
+communication - and therefore synchronization - between parallel processes.
+Of course, we need to ensure that solutions are visible after they are
+found.
+
+\mynote{quicksort insert code snippet}
+
+The program is a (somewhat naive) parallel implementation of quicksort. Anytime
+the algorithm divides the problem in two, the calling thread forks a task to
+solve the left part of the problem, executing the right part itself. Forked
+tasks are run in parallel at the discretion of the java \java{ForkJoinPool}.
+
+As is common, and as is recommended in the popular algorithms text book by
+\citet{sedgewick}, the implementation uses a cutoff to a sequential selection
+sort. An experiment is included to find a good value for the cutoff.
+
+There is no step to combine the results of two subproblems, as calls operate
+in-place on the same shared array. While this may \textit{seem} like communication
+between threads, there is only a single thread operating on a given
+array-segment at any time. The only relevant communication is that of the
+constructor parameters to the recursive calls, and the array. Operations in
+recursive calls are guaranteed to be visible to the caller because of the
+call to \java{join()}.
+
+\mynote{include concrete parameters: list size(s), cutoff details}
+\mynote{Analyze/conclude}
+
+\subsubsection{Locking \mynote{kmeans, striped hashmap}}
+As examples of locking applications, we examine an implementation of k-means
+clustering, as suggested in the January 2017 exam in Practical Concurrent and
+Parallel Programming (PCPP) at the IT-Univeristy of Copenhagen \cite{kmeansexam,
+kmeansexamcode}, As well as implementation of a concurrent hashmap datastructure
+used in the same course. Both of these applications are studied in
+\cite{mystery}, and can be said to have instigated this project.
+
+\mynote{subdivide eg. with subsubsuectiont, and complete kmeans and explanations}
+
+\subsubsection{Lock free\mynote{(? cas-based?)}}
+\mynote{this needs to be done}

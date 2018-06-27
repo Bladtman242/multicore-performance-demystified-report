@@ -1,0 +1,6 @@
+contended-writes-with-barriers 1    147673766.8 ns 13579211.37          2
+contended-writes-with-barriers 2   1547662493.9 ns 41205455.97          2
+contended-writes-with-barriers 3   1547101634.0 ns 16821640.68          2
+contended-writes-with-barriers 4   1685818140.4 ns 5309335.42          2
+contended-writes-with-barriers 5   2188443845.1 ns 13222003.49          2
+contended-writes-with-barriers 6   2594640021.5 ns 26988597.00          2

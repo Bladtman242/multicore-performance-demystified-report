@@ -1,0 +1,7 @@
+kmeans-q-paddedcluster-server 1   8311667273.0 ns 2623171708.77          2
+kmeans-q-paddedcluster-server 4   6558764867.6 ns 1786463590.02          2
+kmeans-q-paddedcluster-server 8   8765597385.5 ns 2000404745.16          2
+kmeans-q-paddedcluster-server 24   5282510242.0 ns 1230231677.18          2
+kmeans-q-paddedcluster-server 32  19250772301.1 ns 5934468441.28          2
+kmeans-q-paddedcluster-server 48  15750413306.9 ns 5188931920.47          2
+kmeans-q-paddedcluster-server 64  18533414761.9 ns 5556245568.97          2

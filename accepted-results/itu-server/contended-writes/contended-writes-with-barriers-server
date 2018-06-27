@@ -1,0 +1,10 @@
+contended-writes-with-barriers-server 1    131733824.8 ns 4372305.77          2
+contended-writes-with-barriers-server 2   1061863860.3 ns 108743601.01          2
+contended-writes-with-barriers-server 4   2787318250.3 ns 112785412.18          2
+contended-writes-with-barriers-server 8   6616131626.6 ns 107207886.73          2
+contended-writes-with-barriers-server 12  10420459153.5 ns 75889777.08          2
+contended-writes-with-barriers-server 16  11763508097.5 ns 32745726.26          2
+contended-writes-with-barriers-server 24  13180635564.0 ns 131181724.07          2
+contended-writes-with-barriers-server 32  15883616264.6 ns 210670403.45          2
+contended-writes-with-barriers-server 48  25552966425.9 ns 271630089.22          2
+contended-writes-with-barriers-server 64  33021547870.4 ns 272523069.02          2

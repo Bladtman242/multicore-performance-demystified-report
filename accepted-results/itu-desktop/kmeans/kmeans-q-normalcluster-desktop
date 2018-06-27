@@ -1,0 +1,4 @@
+kmeans-q-normalcluster-desktop 1   6544197701.8 ns 1119260767.51          2
+kmeans-q-normalcluster-desktop 4   3949650372.3 ns 1186779710.73          2
+kmeans-q-normalcluster-desktop 8   2670728268.1 ns 655225790.21          2
+kmeans-q-normalcluster-desktop 16   3576912148.5 ns 1036327906.79          2

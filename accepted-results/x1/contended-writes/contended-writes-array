@@ -1,0 +1,6 @@
+contended-writes-array    1    102568499.5 ns 1361305.98          4
+contended-writes-array    2    114536916.9 ns 5128188.96          4
+contended-writes-array    3    230084256.2 ns 10110468.37          2
+contended-writes-array    4    331550732.4 ns 2748499.15          2
+contended-writes-array    5    418814214.7 ns 5208282.01          2
+contended-writes-array    6    500952508.3 ns 4731478.23          2

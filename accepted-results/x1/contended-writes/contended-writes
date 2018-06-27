@@ -1,0 +1,6 @@
+contended-writes          1    122399486.0 ns 1897218.55          4
+contended-writes          2    160727664.0 ns 1329487.04          2
+contended-writes          3    284414374.8 ns 11090821.50          2
+contended-writes          4    350865595.1 ns  669983.97          2
+contended-writes          5    451188308.9 ns 10353747.31          2
+contended-writes          6    513690222.8 ns 7732854.35          2
