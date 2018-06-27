@@ -20,21 +20,21 @@ incsNoBarrier=66000000
 incsBarrier=6000000
 
 set yrange [0:]
-plot '../accepted-results/x1/intcounters-4threads/counters-no-barrier-local' using 2:($3/incsNoBarrier):xticlabels(2) with linespoints title "no-barrier-local", \
-     '../accepted-results/x1/intcounters-4threads/counters-no-barrier-array' using 2:($3/incsNoBarrier) with linespoints title "no-barrier-array", \
-     '../accepted-results/itu-desktop/intcounters-8threads/counters-no-barrier-local-desktop' using 2:($3/incsNoBarrier) with linespoints title "no-barrier-local-desktop", \
-     '../accepted-results/itu-desktop/intcounters-8threads/counters-no-barrier-array-desktop' using 2:($3/incsNoBarrier) with linespoints title "no-barrier-array-desktop", \
-     '../accepted-results/itu-server/intcounters-48threads/counters-no-barrier-local-server' using 2:($3/incsNoBarrier) with linespoints title "no-barrier-local-server", \
-     '../accepted-results/itu-server/intcounters-48threads/counters-no-barrier-array-server' using 2:($3/incsNoBarrier) with linespoints title "no-barrier-array-server"
+plot '../accepted-results/x1/intcounters-4threads/counters-no-barrier-local' using 2:($3/incsNoBarrier):xticlabels(2) with linespoints title "i5-local", \
+     '../accepted-results/x1/intcounters-4threads/counters-no-barrier-array' using 2:($3/incsNoBarrier) with linespoints title "i5-array", \
+     '../accepted-results/itu-desktop/intcounters-8threads/counters-no-barrier-local-desktop' using 2:($3/incsNoBarrier) with linespoints title "i7-local", \
+     '../accepted-results/itu-desktop/intcounters-8threads/counters-no-barrier-array-desktop' using 2:($3/incsNoBarrier) with linespoints title "i7-array", \
+     '../accepted-results/itu-server/intcounters-48threads/counters-no-barrier-local-server' using 2:($3/incsNoBarrier) with linespoints title "xeon-local", \
+     '../accepted-results/itu-server/intcounters-48threads/counters-no-barrier-array-server' using 2:($3/incsNoBarrier) with linespoints title "xeon-array"
 
 set output "barrier.tex"
 set yrange [0:]
-plot '../accepted-results/x1/intcounters-4threads/counters-barrier-local' using 2:($3/incsBarrier):xticlabels(2) with linespoints title "barrier-local", \
-     '../accepted-results/x1/intcounters-4threads/counters-barrier-array' using 2:($3/incsBarrier) with linespoints title "barrier-array", \
-     '../accepted-results/itu-desktop/intcounters-8threads/counters-barrier-local-desktop' using 2:($3/incsBarrier) with linespoints title "barrier-local-desktop", \
-     '../accepted-results/itu-desktop/intcounters-8threads/counters-barrier-array-desktop' using 2:($3/incsBarrier) with linespoints title "barrier-array-desktop", \
-     '../accepted-results/itu-server/intcounters-48threads/counters-barrier-local-server' using 2:($3/incsBarrier) with linespoints title "barrier-local-server", \
-     '../accepted-results/itu-server/intcounters-48threads/counters-barrier-array-server' using 2:($3/incsBarrier) with linespoints title "barrier-array-server", \
+plot '../accepted-results/x1/intcounters-4threads/counters-barrier-local' using 2:($3/incsBarrier):xticlabels(2) with linespoints title "i5-local", \
+     '../accepted-results/x1/intcounters-4threads/counters-barrier-array' using 2:($3/incsBarrier) with linespoints title "i5-array", \
+     '../accepted-results/itu-desktop/intcounters-8threads/counters-barrier-local-desktop' using 2:($3/incsBarrier) with linespoints title "i7-local", \
+     '../accepted-results/itu-desktop/intcounters-8threads/counters-barrier-array-desktop' using 2:($3/incsBarrier) with linespoints title "i7-array", \
+     '../accepted-results/itu-server/intcounters-48threads/counters-barrier-local-server' using 2:($3/incsBarrier) with linespoints title "xeon-local", \
+     '../accepted-results/itu-server/intcounters-48threads/counters-barrier-array-server' using 2:($3/incsBarrier) with linespoints title "xeon-array"
 
 #set output "qsort.tex"
 #set yrange [0:]
@@ -75,41 +75,51 @@ plot '../accepted-results/x1/intcounters-4threads/counters-barrier-local' using 
 #     '< tail -n+7 ../accepted-results/itu-desktop/readtimes-cyclic/readtimes-padded-cyclic-array-desktop' using 2:3:5 with errorlines title "readtimes-by-array-size-padded-desktop", \
 #     '< sort -k2n ../accepted-results/itu-server/readtimes-cyclic/readtimes-cyclic-array-server' using 2:3:5:xticlabels(2) with errorlines title "readtimes-by-array-size-server", \
 #     '< tail -n+7 ../accepted-results/itu-server/readtimes-cyclic/readtimes-padded-cyclic-array-server' using 2:3:5 with errorlines title "readtimes-by-array-size-padded-server"
-#
-#set output "sharedint.tex"
-#set yrange [0:]
-#unset logscale 
-#plot '../accepted-results/x1/contended-writes/contended-writes' using 2:3:5:xticlabels(2) with errorlines title "contended-writes", \
-#     '../accepted-results/x1/contended-writes/contended-writes-array' using 2:3:5 with errorlines title "contended-writes-array", \
-#     '../accepted-results/x1/contended-writes/contended-writes-and-reads' using 2:3:5 with errorlines title "contended-writes-and-reads"
-#
-#set output "sharedintdesktop.tex"
-#set yrange [0:]
-#plot '../accepted-results/itu-desktop/contended-writes/contended-writes-desktop' using 2:3:5:xticlabels(2) with errorlines title "contended-writes-desktop", \
-#     '../accepted-results/itu-desktop/contended-writes/contended-writes-array-desktop' using 2:3:5 with errorlines title "contended-writes-array-desktop", \
-#     '../accepted-results/itu-desktop/contended-writes/contended-writes-and-reads-desktop' using 2:3:5 with errorlines title "contended-writes-and-reads-desktop"
-#
-#set output "sharedintserver.tex"
-#set yrange [0:]
-#plot '../accepted-results/itu-server/contended-writes/contended-writes-server' using 2:3:5:xticlabels(2) with errorlines title "contended-writes-server", \
-#     '../accepted-results/itu-server/contended-writes/contended-writes-array-server' using 2:3:5 with errorlines title "contended-writes-array-server", \
-#     '../accepted-results/itu-server/contended-writes/contended-writes-and-reads-server' using 2:3:5 with errorlines title "contended-writes-and-reads-server"
-#
-#set output "sharedintbarrier.tex"
-#set yrange [0:]
-#plot '../accepted-results/x1/contended-writes/contended-writes-with-barriers' using 2:3:5:xticlabels(2) with errorlines title "contended-writes-barriers", \
-#     '../accepted-results/x1/contended-writes/contended-writes-and-reads-with-barriers' using 2:3:5 with errorlines title "contended-writes-and-reads-barriers"
-#
-#set output "sharedintbarrierdesktop.tex"
-#set yrange [0:]
-#plot '../accepted-results/itu-desktop/contended-writes/contended-writes-with-barriers-desktop' using 2:3:5:xticlabels(2) with errorlines title "contended-writes-barriers-desktop", \
-#     '../accepted-results/itu-desktop/contended-writes/contended-writes-and-reads-with-barriers-desktop' using 2:3:5 with errorlines title "contended-writes-and-reads-barriers-desktop"
-#
-#set output "sharedintbarrierserver.tex"
-#set yrange [0:]
-#plot '../accepted-results/itu-server/contended-writes/contended-writes-with-barriers-server' using 2:3:5:xticlabels(2) with errorlines title "contended-writes-barriers-server", \
-#     '../accepted-results/itu-server/contended-writes/contended-writes-and-reads-with-barriers-server' using 2:3:5 with errorlines title "contended-writes-and-reads-barriers-server"
-#
+
+set output "sharedint.tex"
+set size 0.5,0.5
+set key off
+set yrange [0:]
+unset logscale 
+
+incsNoBarrier = 200000000
+incsBarrier   = 20000000
+
+plot '../accepted-results/x1/contended-writes/contended-writes' using 2:($3/incsNoBarrier):xticlabels(2) with errorlines title "contended-writes", \
+     '../accepted-results/x1/contended-writes/contended-writes-array' using 2:($3/incsNoBarrier) with errorlines title "contended-writes-array", \
+     '../accepted-results/x1/contended-writes/contended-writes-and-reads' using 2:($3/incsNoBarrier) with errorlines title "contended-writes-and-reads"
+
+set output "sharedintdesktop.tex"
+set yrange [0:]
+plot '../accepted-results/itu-desktop/contended-writes/contended-writes-desktop' using 2:($3/incsNoBarrier):xticlabels(2) with errorlines title "contended-writes-desktop", \
+     '../accepted-results/itu-desktop/contended-writes/contended-writes-array-desktop' using 2:($3/incsNoBarrier) with errorlines title "contended-writes-array-desktop", \
+     '../accepted-results/itu-desktop/contended-writes/contended-writes-and-reads-desktop' using 2:($3/incsNoBarrier) with errorlines title "contended-writes-and-reads-desktop"
+
+set output "sharedintserver.tex"
+set size 1,0.5
+set key off
+set yrange [0:]
+plot '../accepted-results/itu-server/contended-writes/contended-writes-server' using 2:($3/incsNoBarrier):xticlabels(2) with errorlines title "contended-writes-server", \
+     '../accepted-results/itu-server/contended-writes/contended-writes-array-server' using 2:($3/incsNoBarrier) with errorlines title "contended-writes-array-server", \
+     '../accepted-results/itu-server/contended-writes/contended-writes-and-reads-server' using 2:($3/incsNoBarrier) with errorlines title "contended-writes-and-reads-server"
+
+set output "sharedintbarrier.tex"
+set size 0.5,0.5
+set yrange [0:]
+plot '../accepted-results/x1/contended-writes/contended-writes-with-barriers' using 2:($3/incsBarrier):xticlabels(2) with errorlines title "contended-writes-barriers", \
+     '../accepted-results/x1/contended-writes/contended-writes-and-reads-with-barriers' using 2:($3/incsBarrier) with errorlines title "contended-writes-and-reads-barriers"
+
+set output "sharedintbarrierdesktop.tex"
+set yrange [0:]
+plot '../accepted-results/itu-desktop/contended-writes/contended-writes-with-barriers-desktop' using 2:($3/incsBarrier):xticlabels(2) with errorlines title "contended-writes-barriers-desktop", \
+     '../accepted-results/itu-desktop/contended-writes/contended-writes-and-reads-with-barriers-desktop' using 2:($3/incsBarrier) with errorlines title "contended-writes-and-reads-barriers-desktop"
+
+set output "sharedintbarrierserver.tex"
+set size 1,0.5
+set yrange [0:]
+plot '../accepted-results/itu-server/contended-writes/contended-writes-with-barriers-server' using 2:($3/incsBarrier):xticlabels(2) with errorlines title "contended-writes-barriers-server", \
+     '../accepted-results/itu-server/contended-writes/contended-writes-and-reads-with-barriers-server' using 2:($3/incsBarrier) with errorlines title "contended-writes-and-reads-barriers-server"
+
 #set output "kmeans.tex"
 #set yrange [0:]
 #plot '../accepted-results/x1/kmeans/kmeans-p-normalcluster' using 2:3:5:xticlabels(2) with errorlines title "kmeans-p", \

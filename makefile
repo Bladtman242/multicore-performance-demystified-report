@@ -1,3 +1,5 @@
+.PHONY: clean plots
+
 report.pdf: tmp/report.pdf
 	cp $< $@
 
@@ -12,3 +14,6 @@ preview: *.tex tmp
 
 clean:
 	rm tmp/*
+
+plots:
+	(cd plots; gnuplot runtimes-for-plotting.gnu)

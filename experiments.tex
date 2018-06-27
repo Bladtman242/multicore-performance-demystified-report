@@ -39,18 +39,20 @@ additive, lap/desk/serv performs x,y,z ops..}
 
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
-\input{plots/nobarrier.tex}
-\caption{Uncontended integer-increments. Nanoseconds per increment, as a
-function of padding in bytes.}
-\label{fig:uncont}
+\input{plots/barrier.tex}
+\caption{Uncontended increments on volatile integers. The plot shows nanoseconds
+	per increment, as a function of the number of bytes used as padding
+	between the integers.}
+	\label{fig:uncont-nob}
 \end{figure}
 
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
-\input{plots/barrier.tex}
-\caption{Uncontended integer-increments on volatile integers. Nanoseconds per
-increment, as a function of padding in bytes.}
-\label{fig:uncont-nob}
+\input{plots/nobarrier.tex}
+\caption{Uncontended increments on non-volatile integers. The plot shows nanoseconds
+	per increment, as a function of the number of bytes used as padding
+	between the integers.}
+\label{fig:uncont}
 \end{figure}
 
 \mynote{Add explanation of the different plots (array/local,
@@ -86,8 +88,50 @@ finished. This incurs an overhead, as the thread needs to be stopped before the
 benchmark finishes! However, an additional experiment has shown that the time it
 takes to stop a thread is far too small to significantly skew our results.
 
-\mynote{include table of numbers (they are 833.4$\pm$2.82, 1940.5$\pm$58.12,
-and 1256.7$\pm$13.59 ns)})
+\mynote{include table of numbers (they are 833.4$\pm$2.82 (desktop),
+1940.5$\pm$58.12 (server),
+and 1256.7$\pm$13.59 (laptop) ns)})
+
+\begin{figure}[hbpt]
+	\graphicspath{{plots/}}
+	\begin{subfigure}{0.5\textwidth}
+		\input{plots/sharedintbarrier.tex}
+		\caption{i5}
+	\end{subfigure}
+	\begin{subfigure}{0.5\textwidth}
+		\input{plots/sharedintbarrierdesktop.tex}
+		\caption{i7}
+	\end{subfigure}
+	\begin{subfigure}{1\textwidth}
+		\input{plots/sharedintbarrierserver.tex}
+		\caption{xeon}
+	\end{subfigure}
+	\caption{Contended increments on \textbf{volatile} integers. The plots show
+	nanoseconds per increment, as a function of the number of threads.
+	Please Note that both axes vary across the plots.}
+	\label{fig:cont-nob}
+\end{figure}
+
+\begin{figure}[hbpt]
+	\graphicspath{{plots/}}
+	\begin{subfigure}{0.5\textwidth}
+		\input{plots/sharedint.tex}
+		\caption{i5}
+	\end{subfigure}
+	\begin{subfigure}{0.5\textwidth}
+		\input{plots/sharedintdesktop.tex}
+		\caption{i7}
+	\end{subfigure}
+	\begin{subfigure}{1\textwidth}
+		\input{plots/sharedintserver.tex}
+		\caption{xeon}
+	\end{subfigure}
+	\caption{Contended increments on \textbf{non-volatile} integers. The
+	plots show nanoseconds per increment, as a function of the number of
+	threads. Please note that both axes vary across the plots.}
+	\label{fig:uncont-nob}
+	\label{fig:cont-nob}
+\end{figure}
 
 \mynote{include plots as ns-per-operation, concrete numbers/factors, and
 discussion/conclusion on the results, concrete parameters: work not divided..}
@@ -99,8 +143,9 @@ mellem kerner}
 
 
 \subsection{Practical Applications}
-We rarely make software that simply increments counters, it is therefore useful
-to see the effects of false sharing in more complicated applications as well.
+While incrementing counters is useful, it is thankfully not the only thing we
+use software for. It is therefore useful to see the effects of false sharing in
+more complicated applications as well.
 
 In this section we examine false sharing in 4 \mynote{Update if it doesn't
 end up 4} parallel programs. We use Quicksort as an example of the divide and
