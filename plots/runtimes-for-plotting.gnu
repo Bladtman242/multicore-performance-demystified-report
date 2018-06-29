@@ -158,3 +158,100 @@ plot '../accepted-results/itu-server/contended-writes/contended-writes-with-barr
 #     '< sort -nk2 ../accepted-results/itu-server/parallelisability/io-intense-sumwrites-server' using 2:3:5 with errorlines title "io-intense-writes-server", \
 #     '< sort -nk2 ../accepted-results/itu-server/parallelisability/cpu-intense-div-server' using 2:3:5 with errorlines title "cpu-intense-server", \
 #     '< sort -nk2 ../accepted-results/itu-server/parallelisability/mixed-intensive-server' using 2:3:5 with errorlines title "mixed-server"
+
+set size 0.4,0.5
+
+unset key
+
+set xtics 0,32,128 rotate by 45 right
+set mxtics 2
+
+set yrange [0:9e7]
+set ytics ("" 1e7, "" 2e7, "" 3e7, "" 4e7, "" 5e7, "" 6e7, "" 7e7,"" 8e7, "" 9e7)
+
+set output "Histo-lock-local-0-itu-desktop.tex"
+plot '../accepted-results/itu-desktop/histograms/Histo-lock-local-0' using 2:3:5 with errorlines title "Histo-lock-local-0-itu-desktop"
+
+set output "Histo-lock-local-16-itu-desktop.tex"
+plot '../accepted-results/itu-desktop/histograms/Histo-lock-local-16' using 2:3:5 with errorlines title "Histo-lock-local-16-itu-desktop"
+
+set output "Histo-lock-local-32-itu-desktop.tex"
+plot '../accepted-results/itu-desktop/histograms/Histo-lock-local-32' using 2:3:5 with errorlines title "Histo-lock-local-32-itu-desktop"
+
+set output "Histo-lock-local-48-itu-desktop.tex"
+plot '../accepted-results/itu-desktop/histograms/Histo-lock-local-48' using 2:3:5 with errorlines title "Histo-lock-local-48-itu-desktop"
+
+set output "Histo-lock-local-64-itu-desktop.tex"
+plot '../accepted-results/itu-desktop/histograms/Histo-lock-local-64' using 2:3:5 with errorlines title "Histo-lock-local-64-itu-desktop"
+
+set output "Histo-lock-local-80-itu-desktop.tex"
+plot '../accepted-results/itu-desktop/histograms/Histo-lock-local-80' using 2:3:5 with errorlines title "Histo-lock-local-80-itu-desktop"
+
+set output "Histo-lock-local-96-itu-desktop.tex"
+plot '../accepted-results/itu-desktop/histograms/Histo-lock-local-96' using 2:3:5 with errorlines title "Histo-lock-local-96-itu-desktop"
+
+set output "Histo-lock-local-112-itu-desktop.tex"
+plot '../accepted-results/itu-desktop/histograms/Histo-lock-local-112' using 2:3:5 with errorlines title "Histo-lock-local-112-itu-desktop"
+
+set output "Histo-lock-local-128-itu-desktop.tex"
+plot '../accepted-results/itu-desktop/histograms/Histo-lock-local-128' using 2:3:5 with errorlines title "Histo-lock-local-128-itu-desktop"
+
+set yrange [0:5e8]
+set ytics ("" 1e8, "" 2e8, "" 3e8, "" 4e8, "" 5e8)
+
+set output "Histo-lock-local-0-itu-server.tex"
+plot '../accepted-results/itu-server/histograms/Histo-lock-local-0' using 2:3:5 with errorlines title "Histo-lock-local-0-itu-server"
+
+set output "Histo-lock-local-16-itu-server.tex"
+plot '../accepted-results/itu-server/histograms/Histo-lock-local-16' using 2:3:5 with errorlines title "Histo-lock-local-16-itu-server"
+
+set output "Histo-lock-local-32-itu-server.tex"
+plot '../accepted-results/itu-server/histograms/Histo-lock-local-32' using 2:3:5 with errorlines title "Histo-lock-local-32-itu-server"
+
+set output "Histo-lock-local-48-itu-server.tex"
+plot '../accepted-results/itu-server/histograms/Histo-lock-local-48' using 2:3:5 with errorlines title "Histo-lock-local-48-itu-server"
+
+set output "Histo-lock-local-64-itu-server.tex"
+plot '../accepted-results/itu-server/histograms/Histo-lock-local-64' using 2:3:5 with errorlines title "Histo-lock-local-64-itu-server"
+
+set output "Histo-lock-local-80-itu-server.tex"
+plot '../accepted-results/itu-server/histograms/Histo-lock-local-80' using 2:3:5 with errorlines title "Histo-lock-local-80-itu-server"
+
+set output "Histo-lock-local-96-itu-server.tex"
+plot '../accepted-results/itu-server/histograms/Histo-lock-local-96' using 2:3:5 with errorlines title "Histo-lock-local-96-itu-server"
+
+set output "Histo-lock-local-112-itu-server.tex"
+plot '../accepted-results/itu-server/histograms/Histo-lock-local-112' using 2:3:5 with errorlines title "Histo-lock-local-112-itu-server"
+
+set output "Histo-lock-local-128-itu-server.tex"
+plot '../accepted-results/itu-server/histograms/Histo-lock-local-128' using 2:3:5 with errorlines title "Histo-lock-local-128-itu-server"
+
+set yrange [0:1.5e8]
+set ytics ("" 0.5e8, "" 1e8, "" 1.5e8)
+
+set output "Histo-lock-local-0-x1.tex"
+plot '../accepted-results/x1/histograms/Histo-lock-local-0' using 2:3:5 with errorlines title "Histo-lock-local-0-x1"
+
+set output "Histo-lock-local-16-x1.tex"
+plot '../accepted-results/x1/histograms/Histo-lock-local-16' using 2:3:5 with errorlines title "Histo-lock-local-16-x1"
+
+set output "Histo-lock-local-32-x1.tex"
+plot '../accepted-results/x1/histograms/Histo-lock-local-32' using 2:3:5 with errorlines title "Histo-lock-local-32-x1"
+
+set output "Histo-lock-local-48-x1.tex"
+plot '../accepted-results/x1/histograms/Histo-lock-local-48' using 2:3:5 with errorlines title "Histo-lock-local-48-x1"
+
+set output "Histo-lock-local-64-x1.tex"
+plot '../accepted-results/x1/histograms/Histo-lock-local-64' using 2:3:5 with errorlines title "Histo-lock-local-64-x1"
+
+set output "Histo-lock-local-80-x1.tex"
+plot '../accepted-results/x1/histograms/Histo-lock-local-80' using 2:3:5 with errorlines title "Histo-lock-local-80-x1"
+
+set output "Histo-lock-local-96-x1.tex"
+plot '../accepted-results/x1/histograms/Histo-lock-local-96' using 2:3:5 with errorlines title "Histo-lock-local-96-x1"
+
+set output "Histo-lock-local-112-x1.tex"
+plot '../accepted-results/x1/histograms/Histo-lock-local-112' using 2:3:5 with errorlines title "Histo-lock-local-112-x1"
+
+set output "Histo-lock-local-128-x1.tex"
+plot '../accepted-results/x1/histograms/Histo-lock-local-128' using 2:3:5 with errorlines title "Histo-lock-local-128-x1"

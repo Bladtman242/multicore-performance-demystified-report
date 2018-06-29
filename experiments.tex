@@ -43,7 +43,7 @@ additive, lap/desk/serv performs x,y,z ops..}
 \caption{Uncontended increments on volatile integers. The plot shows nanoseconds
 	per increment, as a function of the number of bytes used as padding
 	between the integers.}
-	\label{fig:uncont-nob}
+	\label{fig:uncont}
 \end{figure}
 
 \begin{figure}[hbpt]
@@ -52,7 +52,7 @@ additive, lap/desk/serv performs x,y,z ops..}
 \caption{Uncontended increments on non-volatile integers. The plot shows nanoseconds
 	per increment, as a function of the number of bytes used as padding
 	between the integers.}
-\label{fig:uncont}
+\label{fig:uncont-nob}
 \end{figure}
 
 \mynote{Add explanation of the different plots (array/local,
@@ -109,7 +109,7 @@ and 1256.7$\pm$13.59 (laptop) ns)})
 	\caption{Contended increments on \textbf{volatile} integers. The plots show
 	nanoseconds per increment, as a function of the number of threads.
 	Please Note that both axes vary across the plots.}
-	\label{fig:cont-nob}
+	\label{fig:cont}
 \end{figure}
 
 \begin{figure}[hbpt]
@@ -129,7 +129,6 @@ and 1256.7$\pm$13.59 (laptop) ns)})
 	\caption{Contended increments on \textbf{non-volatile} integers. The
 	plots show nanoseconds per increment, as a function of the number of
 	threads. Please note that both axes vary across the plots.}
-	\label{fig:uncont-nob}
 	\label{fig:cont-nob}
 \end{figure}
 
@@ -197,4 +196,5 @@ used in the same course. Both of these applications are studied in
 \mynote{subdivide eg. with subsubsuectiont, and complete kmeans and explanations}
 
 \subsubsection{Lock free\mynote{(? cas-based?)}}
+\input{histo-plots.tex}
 \mynote{this needs to be done}
