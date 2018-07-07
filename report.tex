@@ -20,7 +20,7 @@
 \renewcommand{\%}{\scalebox{.9}{\oldpct}}
 
 %todo/notes command
-\newcommand\mynote[1]{\textcolor{red}{\{#1\}}}
+\newcommand\mynote[1]{\noindent\textcolor{red}{\{#1\}}}
 
 %java name styling
 \newcommand\java[1]{\texttt{#1}}
@@ -43,19 +43,20 @@
 
 \input{introduction.tex}
 
-\section{Machine architecture for software designers }
-\mynote{(focus on memory hierarchy and coherency)}
-\mynote{readtimes plots go here.}
-\mynote{Caches, MESI, store-buffers and invalidation queues (explanation and proof of false-sharing impact)}
+\input{architecture.tex}
+
+\mynote{Caches, MESI, store-buffers and invalidation queues (explanation of false-sharing impact)}
 
 \section{Java and memory}
 \mynote{Explain relevant details of java memory layout, to the point where the
 Method section can refer back here to say that we can't fully control the layout
 for our benchmarks}
+
 \mynote{Use and introduce the JOL tool}
 
 \section{Memory operations are expensive}
 \mynote{(may be "the new FLOPS")}
+
 \mynote{Refer to bench-marks: (cyclic) Read-times vs simple math operation}
 
 \section{Method}
@@ -68,6 +69,11 @@ noise in bmarks, java/hw memory-layout impedance)}
 \input{experiments.tex}
 
 \section{Advice for Multicore Programmers}
+\mynote{Add observations from openjdk's implementations of
+atomicint/atomicintarray, LongAdder, and Striped64 classes. Also from the commit
+message introducing @contended to openjdk, and that one blog-post suggesting to
+pad using inheritance. Also, padding strategies may be examined by using JOL
+here, if not in earlier sections}
 
 \clearpage
 \nocite{*}

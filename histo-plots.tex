@@ -1,0 +1,134 @@
+\begin{figure}[hbpt]
+	\graphicspath{{plots/}}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-0-x1.tex}
+		\caption{0 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-16-x1.tex}
+		\caption{16 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-32-x1.tex}
+		\caption{32 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-48-x1.tex}
+		\caption{48 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-64-x1.tex}
+		\caption{64 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-80-x1.tex}
+		\caption{80 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-96-x1.tex}
+		\caption{96 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-112-x1.tex}
+		\caption{112 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-128-x1.tex}
+		\caption{128 bytes}
+	\end{subfigure}
+	\caption{The histogram problem on the i5 platform. Each plot uses a
+	different amount of padding between the locks (specified beneath each
+	plot). The plots show the running time of the histogram problem (each
+	tick is 50 milliseconds. The axis starts at 0) as a function of the amount of padding between
+	the histogram buckets in bytes.}
+\end{figure}
+
+\begin{figure}[hbpt]
+	\graphicspath{{plots/}}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-0-itu-desktop.tex}
+		\caption{0 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-16-itu-desktop.tex}
+		\caption{16 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-32-itu-desktop.tex}
+		\caption{32 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-48-itu-desktop.tex}
+		\caption{48 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-64-itu-desktop.tex}
+		\caption{64 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-80-itu-desktop.tex}
+		\caption{80 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-96-itu-desktop.tex}
+		\caption{96 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-112-itu-desktop.tex}
+		\caption{112 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-128-itu-desktop.tex}
+		\caption{128 bytes}
+	\end{subfigure}
+	\caption{The histogram problem on the i7 platform. Each plot uses a
+	different amount of padding between the locks (specified beneath each
+	plot). The plots show the running time of the histogram problem (each
+	tick is 10 milliseconds. The axis starts at 0) as a function of the amount of padding between
+	the histogram buckets in bytes.}
+\end{figure}
+
+\begin{figure}[hbpt]
+	\graphicspath{{plots/}}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-0-itu-server.tex}
+		\caption{0 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-16-itu-server.tex}
+		\caption{16 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-32-itu-server.tex}
+		\caption{32 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-48-itu-server.tex}
+		\caption{48 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-64-itu-server.tex}
+		\caption{64 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-80-itu-server.tex}
+		\caption{80 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-96-itu-server.tex}
+		\caption{96 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-112-itu-server.tex}
+		\caption{112 bytes}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\input{plots/Histo-lock-local-128-itu-server.tex}
+		\caption{128 bytes}
+	\end{subfigure}
+	\caption{The histogram problem on the xeon platform. Each plot uses a
+	different amount of padding between the locks (specified beneath each
+	plot). The plots show the running time of the histogram problem (each
+	tick is 100 milliseconds. The axis starts at 0) as a function of the amount of padding between
+	the histogram buckets in bytes.}
+\end{figure}

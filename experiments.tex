@@ -1,7 +1,7 @@
 \section{Experiments}
 \mynote{Note high std dev where relevant}
 \subsection{Multicore Cache Performance}
-\mynote{\textbf{contents: (parrallelisability?)}}
+\mynote{contents: (parrallelisability?)}
 
 To see the potential impact of false sharing, it is illustrative to look at a
 few contrived example programs. In this section we look at a handful of
@@ -143,7 +143,7 @@ mellem kerner}
 
 \subsection{Practical Applications}
 While incrementing counters is useful, it is thankfully not the only thing we
-use software for. It is therefore useful to see the effects of false sharing in
+build software for. It is therefore useful to see the effects of false sharing in
 more complicated applications as well.
 
 In this section we examine false sharing in 4 \mynote{Update if it doesn't
@@ -160,8 +160,8 @@ results into a solution for the whole problem. With respect to synchronization,
 we can see this problem division as a kind of avoidance: If the sub-problems are
 independent, they can be solved in parallel on a multicore system without any
 communication - and therefore synchronization - between parallel processes.
-Of course, we need to ensure that solutions are visible after they are
-found.
+Of course, we need to ensure that solutions are visible \textit{after} they are
+found, but no communication is needed while the programs run.
 
 \mynote{quicksort insert code snippet}
 
@@ -183,6 +183,7 @@ recursive calls are guaranteed to be visible to the caller because of the
 call to \java{join()}.
 
 \mynote{include concrete parameters: list size(s), cutoff details}
+
 \mynote{Analyze/conclude}
 
 \subsubsection{Locking \mynote{kmeans, striped hashmap}}

@@ -13,8 +13,8 @@ while the sequential version of the program benefits from the change, parallel
 versions suffer greatly. This is due to the effect known as \textit{false
 sharing of cache lines} (or simply \textit{false sharing}). He further finds that
 the effect of false sharing is highly significant when locking on elements in an
-array, even though they are uncontended. He subsequently shows that a
-lock-striping implementation of a concurrent hashmap also suffers greatly from
+array, even though they are uncontended. He subsequently shows that
+lock-striping implementations of concurrent hashmaps can suffer greatly from
 false sharing.
 
 While the variance in cache-behaviour between sequential and parallel programs
@@ -32,8 +32,8 @@ performance for sequential programs and parallel programs with high
 per-processor data locality, but harms performance for parallel programs with
 low per-processor data locality. This happens when the cost of additional cache
 invalidations, and subsequent misses, outweighs the coherency overhead saved by
-performing fewer, larger cache reads. They also find that increasing the cache
-size shifts the type of cache misses that occur in parallel programs. The larger
+performing fewer, larger cache reads. They also find that increases in cache
+size shifts the type of cache misses that occur in parallel programs: The larger
 the cache, the more cache misses occur due to the coherency protocol (both in
 absolute terms and relative to the total number of cache misses). The authors
 suggest that the problem can be mitigated either by an optimizing compiler or
@@ -61,29 +61,33 @@ times faster execution time than the sequential version, and $\sim 3$ times
 faster than the unoptimized parallel version.
 
 In \citeyear{TorrellasShared}, \citeauthor{TorrellasShared}
-\cite{TorrellasShared} analyzed the effects of false (as well as true) sharing
+\cite{TorrellasShared} analyzed the effects of sharing (both true and false)
 on a small suite of programs, before and after implementing a set of locality
 optimizations. Curiously, they seem to expect that existing compilers already
 pad around synchronization variables to prevent false sharing. As we shall see,
-and as found in \cite{mystery}, this is not the case with Java. In fact, we are
-not aware that this is case for any particular compiler.
-Their work shows that focusing on data sharing is particularly important when
-using optimizing compilers. This is not because optimizing compilers make
-sharing worse, but because they are good at eliminating memory accesses to
-processor-private data e.g. by keeping data in CPU registers. Hence, when
-using an optimizing compiler, memory access to shared data often dominates IO
-utilization for parallel programs. They provide a set of optimizations
-requiring detailed profiling information about the program to be optimized, and
-a set that requires no such information. In the authors' own words, their
-optimizations had a "small but significant impact". Across their experiments,
-cache misses are reduced by 0.2-24\%. One might speculate that the comparatively
-modest reductions are due to the small cache line size used in their simulations
-(4-16 vs. 4-256 bytes in \cite{EggersReducing}).
+and as found in \cite{mystery}, this is not the case with Java. In fact, I am
+not aware that this is the case for any particular compiler except for the work
+produced in \cite{EggersReducing} \mynote{time permitting, I'll test this for
+gcc}.
+The work in \cite{TorrellasShared} shows that focusing on data sharing is particularly important when
+using optimizing compilers. This is not necessarily because optimizing compilers
+make sharing worse, but because they are good at eliminating memory accesses to
+processor-private data e.g. by keeping data in CPU registers. This wouldn't work
+for shared data, as it would circumvent the coherence ensured by the cache.
+Hence, when using an optimizing compiler, memory access to shared data often
+dominates IO utilization for parallel programs. They provide two sets of
+optimizations: One requiring detailed profiling information about the program to
+be optimized, and one that requires no such information. In the authors' own
+words, their optimizations had a "small but significant impact". Across their
+experiments, cache misses are reduced by 0.2-24\%. One might speculate that the
+comparatively modest reductions are due to the small cache line size used in
+their simulations (4-16 bytes vs. 4-256 bytes in \cite{EggersReducing}, and 64
+bytes in \cite{mystery}).
 
 In \citeyear{falsedef},
 \citeauthor{falsedef} \cite{falsedef}
 
-\mynote{Write bg for torrellas and Bolosky\&Scott}
+\mynote{Write background for Bolosky\&Scott}
 
-\mynote{Write bg for the resources used at the outset of the project}
+\mynote{Write bg for the (not very sharing-specific) resources used at the outset of the project}
 
