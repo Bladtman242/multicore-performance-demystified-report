@@ -1,7 +1,14 @@
-\section{Experiments}
-\mynote{Note high std dev where relevant}
-\subsection{Multicore Cache Performance}
-\mynote{contents: (parrallelisability?)}
+\chapter{Experiments}
+\label{sec:experiments}
+
+\mynote{Comment high std dev where relevant}
+
+\section{Multicore Cache Performance}
+\mynote{contents: (parallelisability plots here?)}
+\mynote{I'm probably out of time, but if not, here are things to do: find
+problem in kmeans (and potentially qsort), implement simple dense-locking in
+other languages (C and C\# come to mind), try a different stress-pattern for
+hashmaps, make cyclic-buffer CAS experiment}
 
 To see the potential impact of false sharing, it is illustrative to look at a
 few contrived example programs. In this section we look at a handful of
@@ -141,17 +148,26 @@ illustrativt), indikerer (løst) pris af at smide en cache-line frem og tilbage
 mellem kerner}
 
 
-\subsection{Practical Applications}
+\section{Practical Applications}
 While incrementing counters is useful, it is thankfully not the only thing we
 build software for. It is therefore useful to see the effects of false sharing in
 more complicated applications as well.
 
 In this section we examine false sharing in 4 \mynote{Update if it doesn't
-end up 4} parallel programs. We use Quicksort as an example of the divide and
-conquer paradigm, where the division of subproblems limit the need for
-synchronization. We take k-means clustering and a striped hashmap implementation
-as examples of locking applications. Finally, we \mynote{more problems go here
-when found}
+end up 4} parallel programs.
+
+First we will look several programs that build histograms. These example
+programs will motivate our approach from course- to fine-grained synchronization
+with padding. One implementation also serves as an example of false sharing in
+lock-free CAS based applications. We then use Quicksort as an example of the
+divide and conquer paradigm, where the division of subproblems limit the need
+for synchronization. We take k-means clustering and a striped hashmap
+implementation as examples of locking applications.
+
+\subsubsection{Histogram builder}
+\mynote{needs to be written, so far only some of the plots are included
+(figures \ref{fig:histo-i5},\ref{fig:histo-i7}, and \ref{fig:histo-xeon})}
+\input{histo-plots.tex}
 
 \subsubsection{Divide and Conquer \mynote{avoidance? Quicksort}}
 A famous example of a divide-and-conquer algorithm, quicksort recursively
@@ -194,8 +210,4 @@ kmeansexamcode}, As well as implementation of a concurrent hashmap datastructure
 used in the same course. Both of these applications are studied in
 \cite{mystery}, and can be said to have instigated this project.
 
-\mynote{subdivide eg. with subsubsuectiont, and complete kmeans and explanations}
-
-\subsubsection{Lock free\mynote{(? cas-based?)}}
-\input{histo-plots.tex}
-\mynote{this needs to be done}
+\mynote{subdivide eg. with subsubsections, and complete kmeans and explanations}

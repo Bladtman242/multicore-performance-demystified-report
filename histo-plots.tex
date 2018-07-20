@@ -36,11 +36,16 @@
 		\input{plots/Histo-lock-local-128-x1.tex}
 		\caption{128 bytes}
 	\end{subfigure}
-	\caption{The histogram problem on the i5 platform. Each plot uses a
-	different amount of padding between the locks (specified beneath each
-	plot). The plots show the running time of the histogram problem (each
-	tick is 50 milliseconds. The axis starts at 0) as a function of the amount of padding between
-	the histogram buckets in bytes.}
+	\caption{The histogram problem on the i5 platform. Here the impact of
+	padding the locks is negative, while padding the buckets improves
+	performance by 10.7\%. The best time is 100.88 milliseconds, achieved by
+	padding the buckets with 128 bytes, and not padding the locks.
+	Each plot uses a different amount of padding between the locks
+	(specified beneath each plot). The plots show the running time of the
+	histogram problem as a function of the amount of padding between the
+	histogram buckets in bytes. Each y-tick is 50 milliseconds. The axis
+	starts at 0.}
+	\label{fig:histo-i5}
 \end{figure}
 
 \begin{figure}[hbpt]
@@ -81,11 +86,15 @@
 		\input{plots/Histo-lock-local-128-itu-desktop.tex}
 		\caption{128 bytes}
 	\end{subfigure}
-	\caption{The histogram problem on the i7 platform. Each plot uses a
-	different amount of padding between the locks (specified beneath each
-	plot). The plots show the running time of the histogram problem (each
-	tick is 10 milliseconds. The axis starts at 0) as a function of the amount of padding between
-	the histogram buckets in bytes.}
+	\caption{The histogram problem on the i7 platform. Here the overall
+	trend is that padding improves performance with respect to both buckets
+	and locks. The best time is 59.9 milliseconds, achieved by padding the
+	locks with 112 bytes, and the buckets with 128 bytes. That is a 16.9\%
+	improvement on not using padding. Each plot uses a different amount of
+	padding between the locks (specified beneath each plot). The plots show
+	the running time of the histogram problem as a function of the amount of
+	padding between the histogram buckets in bytes. Each y-tick is 10
+	milliseconds. The axis starts at 0.} \label{fig:histo-i7}
 \end{figure}
 
 \begin{figure}[hbpt]
@@ -126,9 +135,15 @@
 		\input{plots/Histo-lock-local-128-itu-server.tex}
 		\caption{128 bytes}
 	\end{subfigure}
-	\caption{The histogram problem on the xeon platform. Each plot uses a
+	\caption{The histogram problem on the xeon platform. Here padding has a
+	large effect, both for the buckets and the locks. The best time is
+	118.62 miliseconds, achieved by padding the locks with 112 bytes, and
+	the histograms with 128 bytes. That is a 71.8\% improvement on not using
+	padding.
+	Each plot uses a
 	different amount of padding between the locks (specified beneath each
-	plot). The plots show the running time of the histogram problem (each
-	tick is 100 milliseconds. The axis starts at 0) as a function of the amount of padding between
-	the histogram buckets in bytes.}
+	plot). The plots show the running time of the histogram problem as a
+	function of the amount of padding between the histogram buckets in
+	bytes. Each tick is 100 milliseconds. The axis starts at 0.}
+	\label{fig:histo-xeon}
 \end{figure}

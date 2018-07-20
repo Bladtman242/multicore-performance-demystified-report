@@ -1,4 +1,4 @@
-set term epslatex
+set term epslatex linewidth 2
 
 #set output "cpuloadx1.tex"
 
@@ -54,27 +54,42 @@ plot '../accepted-results/x1/intcounters-4threads/counters-barrier-local' using 
 #     '../accepted-results/itu-server/qsort/qsort-by-padding-padall-array' using 2:3:5 with errorlines title "by-padding-padall-array-server", \
 #     '../accepted-results/itu-server/qsort/qsort-by-padding-padsome-array' using 2:3:5 with errorlines title "by-padding-padsome-array-server"
 #
-#set output "readtimes.tex"
-#set yrange [0:]
-#set xrange [0:]
-#set xtics () rotate by -45
-#plot '< head -n 7 ../accepted-results/x1/readtimes-cyclic/readtimes-cyclic-array' using 2:3:5:xticlabels(2) with errorlines title "readtimes-by-array-size", \
-#     '< head -n 7 ../accepted-results/x1/readtimes-cyclic/readtimes-padded-cyclic-array' using 2:3:5 with errorlines title "readtimes-by-array-size-padded", \
-#     '< head -n 7 ../accepted-results/itu-desktop/readtimes-cyclic/readtimes-cyclic-array-desktop' using 2:3:5 with errorlines title "readtimes-by-array-size-desktop", \
-#     '< head -n 7 ../accepted-results/itu-desktop/readtimes-cyclic/readtimes-padded-cyclic-array-desktop' using 2:3:5 with errorlines title "readtimes-by-array-size-padded-desktop", \
-#     '< head -n 7 ../accepted-results/itu-server/readtimes-cyclic/readtimes-cyclic-array-server' using 2:3:5 with errorlines title "readtimes-by-array-size-server", \
-#     '< head -n 7 ../accepted-results/itu-server/readtimes-cyclic/readtimes-padded-cyclic-array-server' using 2:3:5 with errorlines title "readtimes-by-array-size-padded-server"
-#
-#set output "readtimes2.tex"
-#set yrange [0:]
-#set xrange [*:]
-#set xtics () rotate by -45
-#plot '< sort -k2n ../accepted-results/x1/readtimes-cyclic/readtimes-cyclic-array' using 2:3:5:xticlabels(2) with errorlines title "readtimes-by-array-size", \
-#     '< tail -n+7 ../accepted-results/x1/readtimes-cyclic/readtimes-padded-cyclic-array' using 2:3:5 with errorlines title "readtimes-by-array-size-padded", \
-#     '< sort -k2n ../accepted-results/itu-desktop/readtimes-cyclic/readtimes-cyclic-array-desktop' using 2:3:5 with errorlines title "readtimes-by-array-size-desktop", \
-#     '< tail -n+7 ../accepted-results/itu-desktop/readtimes-cyclic/readtimes-padded-cyclic-array-desktop' using 2:3:5 with errorlines title "readtimes-by-array-size-padded-desktop", \
-#     '< sort -k2n ../accepted-results/itu-server/readtimes-cyclic/readtimes-cyclic-array-server' using 2:3:5:xticlabels(2) with errorlines title "readtimes-by-array-size-server", \
-#     '< tail -n+7 ../accepted-results/itu-server/readtimes-cyclic/readtimes-padded-cyclic-array-server' using 2:3:5 with errorlines title "readtimes-by-array-size-padded-server"
+
+set output "readtimes.tex"
+set size 1,0.77
+set yrange [0:]
+set xrange [0:]
+set xtics () rotate by -45
+set lmargin 5
+set rmargin 5
+jumps=2**25
+
+plot '< awk "\$2 <= 512 {print}" ../accepted-results/x1/readtimes-cyclic/readtimes-cyclic-array' using 2:($3/jumps):5:xticlabels(2) with linespoints title "readtimes-by-array-size", \
+     '< awk "\$2<=512 {print}" ../accepted-results/x1/readtimes-cyclic/readtimes-padded-cyclic-array' using 2:($3/jumps):5 with linespoints title "readtimes-by-array-size-padded", \
+     '< awk "\$2<=512 {print}" ../accepted-results/itu-desktop/readtimes-cyclic/readtimes-cyclic-array-desktop' using 2:($3/jumps):5 with linespoints title "readtimes-by-array-size-desktop", \
+     '< awk "\$2<=512 {print}" ../accepted-results/itu-desktop/readtimes-cyclic/readtimes-padded-cyclic-array-desktop' using 2:($3/jumps):5 with linespoints title "readtimes-by-array-size-padded-desktop", \
+     '< awk "\$2<=512 {print}" ../accepted-results/itu-server/readtimes-cyclic/readtimes-cyclic-array-server' using 2:($3/jumps):5 with linespoints title "readtimes-by-array-size-server", \
+     '< awk "\$2<=512 {print}" ../accepted-results/itu-server/readtimes-cyclic/readtimes-padded-cyclic-array-server' using 2:($3/jumps):5 with linespoints title "readtimes-by-array-size-padded-server"
+
+set output "readtimes2.tex"
+set yrange [0:]
+set xrange [*:]
+plot '< awk "\$2>=512&&\$2<=8192 {print}" ../accepted-results/x1/readtimes-cyclic/readtimes-cyclic-array' using 2:($3/jumps):5:xticlabels(2) with linespoints title "readtimes-by-array-size", \
+     '< awk "\$2>=512&&\$2<=8192 {print}" ../accepted-results/x1/readtimes-cyclic/readtimes-padded-cyclic-array' using 2:($3/jumps):5 with linespoints title "readtimes-by-array-size-padded", \
+     '< awk "\$2>=512&&\$2<=8192 {print}" ../accepted-results/itu-desktop/readtimes-cyclic/readtimes-cyclic-array-desktop' using 2:($3/jumps):5 with linespoints title "readtimes-by-array-size-desktop", \
+     '< awk "\$2>=512&&\$2<=8192 {print}" ../accepted-results/itu-desktop/readtimes-cyclic/readtimes-padded-cyclic-array-desktop' using 2:($3/jumps):5 with linespoints title "readtimes-by-array-size-padded-desktop", \
+     '< awk "\$2>=512&&\$2<=8192 {print}" ../accepted-results/itu-server/readtimes-cyclic/readtimes-cyclic-array-server' using 2:($3/jumps):5:xticlabels(2) with linespoints title "readtimes-by-array-size-server", \
+     '< awk "\$2>=512&&\$2<=8192 {print}" ../accepted-results/itu-server/readtimes-cyclic/readtimes-padded-cyclic-array-server' using 2:($3/jumps):5 with linespoints title "readtimes-by-array-size-padded-server"
+
+set output "readtimes3.tex"
+set yrange [0:]
+set xrange [*:]
+plot '< awk "\$2>=8192 {print}" ../accepted-results/x1/readtimes-cyclic/readtimes-cyclic-array' using 2:($3/jumps):5:xticlabels(2) with linespoints title "readtimes-by-array-size", \
+     '< awk "\$2>=8192 {print}" ../accepted-results/x1/readtimes-cyclic/readtimes-padded-cyclic-array' using 2:($3/jumps):5 with linespoints title "readtimes-by-array-size-padded", \
+     '< awk "\$2>=8192 {print}" ../accepted-results/itu-desktop/readtimes-cyclic/readtimes-cyclic-array-desktop' using 2:($3/jumps):5 with linespoints title "readtimes-by-array-size-desktop", \
+     '< awk "\$2>=8192 {print}" ../accepted-results/itu-desktop/readtimes-cyclic/readtimes-padded-cyclic-array-desktop' using 2:($3/jumps):5 with linespoints title "readtimes-by-array-size-padded-desktop", \
+     '< awk "\$2>=8192 {print}" ../accepted-results/itu-server/readtimes-cyclic/readtimes-cyclic-array-server' using 2:($3/jumps):5:xticlabels(2) with linespoints title "readtimes-by-array-size-server", \
+     '< awk "\$2>=8192 {print}" ../accepted-results/itu-server/readtimes-cyclic/readtimes-padded-cyclic-array-server' using 2:($3/jumps):5 with linespoints title "readtimes-by-array-size-padded-server"
 
 set output "sharedint.tex"
 set size 0.5,0.5
@@ -160,6 +175,8 @@ plot '../accepted-results/itu-server/contended-writes/contended-writes-with-barr
 #     '< sort -nk2 ../accepted-results/itu-server/parallelisability/mixed-intensive-server' using 2:3:5 with errorlines title "mixed-server"
 
 set size 0.4,0.5
+set lmargin 2.6
+set rmargin 2.6
 
 unset key
 
