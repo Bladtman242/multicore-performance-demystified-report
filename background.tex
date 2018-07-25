@@ -1,24 +1,23 @@
 \chapter{Background}
 \mynote{introduce section ("previous work")}
-In his paper \cite{mystery} from \citeyear{mystery}, \citeauthor{mystery} brings to attention the curious effects of
-false sharing of CPU cache-lines on a Java runtime platform. Using a k-means
-clustering implementation as example, he shows how a seemingly obvious
-optimization (loop fusion) makes the program 70\% slower in practice. That loop
-transformations can affect data-locality\mynote{this might need a reference},
-and thereby cache utilization, is not surprising. What is surprising is that
-while the sequential version of the program benefits from the change, parallel
-versions suffer greatly. This is due to the effect known as \textit{false
-sharing of cache lines} (or simply \textit{false sharing}). He further finds that
-the effect of false sharing is highly significant when locking on elements in an
-array, even though the individual locks are uncontended. He subsequently shows that
-lock-striping implementations of concurrent hashmaps can suffer greatly from
-false sharing.
+In his paper \cite{mystery} from \citeyear{mystery}, \citeauthor{mystery} brings
+to attention the curious effects of false sharing of CPU cache-lines on a Java
+runtime platform. Using a k-means clustering implementation as example, he shows
+how a seemingly obvious optimization (loop fusion) makes the program 70\% slower
+in practice. That data-locality can affect performance is not surprising.
+What is surprising is that while the sequential version of the program benefits
+from the change, parallel versions suffer greatly. This is due to the effect
+known as \textit{false sharing of cache lines} (or simply \textit{false
+sharing}). He further finds that the effect of false sharing is highly
+significant when locking on elements in an array, even though the individual
+locks are uncontended. He subsequently shows that lock-striping implementations
+of concurrent hashmaps can suffer greatly from false sharing.
 
-While the variance in cache-behaviour between sequential and parallel programs
-is confusing and unintuitive, it is not something new. In \citeyear{Eggersbus},
-\citeauthor{Eggersbus} showed that cpu bus consumption as well as cache-miss
+While the difference in cache-behaviour between sequential and parallel programs
+is confusing and unintuitive, it is not something new. In \citeyear{eggersbus},
+\citeauthor{eggersbus} showed that cpu bus consumption as well as cache-miss
 rates and trends differ between sequential (they use the term "uniprocessor")
-programs and parallel programs \cite{Eggersbus}.
+programs and parallel programs \cite{eggersbus}.
 They analyze cache behaviour for a small suite of programs, distinguishing
 between applications with high and low per-processor data locality\footnote{They
 define programs having high per-processor data locality as programs that perform
@@ -27,7 +26,7 @@ memory is not (or rarely) accessed by more than one processor at a given time}.
 They find that increasing the block (or cache line) size may improve
 performance for sequential programs and parallel programs with high
 per-processor data locality, but harms performance for parallel programs with
-low per-processor data locality. This happens when the cost of additional cache
+low per-processor data locality. This happens because the cost of additional cache
 invalidations, and subsequent misses, outweighs the coherency overhead saved by
 performing fewer, larger cache reads. They also find that increases in cache
 size shifts the type of cache misses that occur in parallel programs: The larger
@@ -43,11 +42,11 @@ avoid false sharing. However, it turns out that making simple transformations to
 the data layout can go a long way. In \cite{mystery}, adding padding around
 relevant variables significantly reduces the overhead.
 
-In \citeyear{EggersReducing}, \citeauthor{EggersReducing} used static analysis
+In \citeyear{eggersReducing}, \citeauthor{eggersReducing} used static analysis
 and compile-time code transformations to drastically reduce false sharing in a
 small suite of course-grained\footnote{Course-grained here refers to the
 granularity of of parallelism, not data sharing} parallel programs
-\cite{EggersReducing} (the suite used was not the same as in \cite{Eggersbus}).
+\cite{eggersReducing} (the suite used was not the same as in \cite{eggersbus}).
 Using three different code transformations, they reduced false sharing by 64\%
 on average, and by more than 90\% in the programs that were not
 locality-optimized by the programmers beforehand. The benefits reaped in terms
@@ -64,27 +63,66 @@ optimizations. Curiously, they seem to expect that existing compilers already
 pad around synchronization variables to prevent false sharing. As we shall see,
 and as found in \cite{mystery}, this is not the case with Java. In fact, I am
 not aware that this is the case for any particular compiler except for the work
-produced in \cite{EggersReducing} \mynote{time permitting, I'll test this for
-gcc}.
-The work in \cite{TorrellasShared} shows that focusing on data sharing is particularly important when
-using optimizing compilers. This is not necessarily because optimizing compilers
-make sharing worse, but because they are good at eliminating memory accesses to
-processor-private data e.g. by keeping data in CPU registers. This wouldn't work
-for shared data, as it would circumvent the coherence ensured by the cache.
-Hence, when using an optimizing compiler, memory access to shared data often
-dominates IO utilization for parallel programs. They provide two sets of
+produced in \cite{eggersReducing}
+
+Their work \cite{TorrellasShared} shows that focusing on data sharing is
+particularly important when using optimizing compilers. Not because optimizing
+compilers make sharing worse (though they can), but because they are good at
+eliminating memory accesses to processor-private data e.g. by keeping data in
+CPU registers. Since they cannot do the same with shared data, as it would
+circumvent the coherence ensured by the cache, memory access to shared data
+often dominates IO consumption for parallel programs. They provide two sets of
 optimizations: One requiring detailed profiling information about the program to
 be optimized, and one that requires no such information. In the authors' own
 words, their optimizations had a "small but significant impact". Across their
 experiments, cache misses are reduced by 0.2-24\%. One might speculate that the
 comparatively modest reductions are due to the small cache line size used in
-their simulations (4-16 bytes vs. 4-256 bytes in \cite{EggersReducing}, and 64
+their simulations (4-16 bytes vs. 4-256 bytes in \cite{eggersReducing}, and 64
 bytes in \cite{mystery}).
 
-In \citeyear{falsedef},
-\citeauthor{falsedef} \cite{falsedef}
+In \citeyear{falsedef}, \citeauthor{falsedef} \cite{falsedef} consider a handful
+of definitions of false sharing, and conclude that none of them are satisfying.
+They wish to find a definition that:
 
-\mynote{Write background for Bolosky\&Scott}
+\begin{itemize}
+	\item Agrees with intuition in that it has has numerical value
+		corresponding to the cost savings attained by eliminating all
+		false sharing. Hence it never grows as data is split over
+		coherence blocks.
+	\item allows the properties of false sharing to be stated and proven as
+		mathematical theorems, and
+	\item is practically measurable for real programs.
+\end{itemize}
+
+It seems unlikely that any definition of false sharing will satisfy their
+criteria: Any definition -- whether it is based on comparing a program's
+behaviour with that of an idealized version\footnotemark, or on analyzing
+sequences of memory operations to determine whether unnecessary communication
+occurs -- must either be able to distinguish the performance impacts of false
+sharing from those that come from communication in the memory hierarchy in
+general, or accept oddities like negative false sharing as optimizations to
+eliminate false sharing will often incur different overheads.  No obvious
+solution for the former presents itself, and the latter is unacceptable to
+\citeauthor{falsedef}.
+
+While a definition satisfying the above criteria would be helpful, we do not
+need it in order to understand how false sharing occurs. We certainly
+do not need it in order to avoid the costs associated with false sharing. In
+fact, the "intuition" requirement directly contradicts our goal: Avoiding
+performance pitfalls. That is, we wish to improve the execution time of our
+programs where possible, so if an optimization increases execution time in spite
+of reducing false sharing, we do not consider it an optimization.
+
+The definition used in this report most closely resembles what
+\citeauthor{falsedef} calls "the hand tuning method", which they attribute to
+\citeauthor{eggersReducing} (referencing work not cited in this report). The
+is best described as hand-modifying programs to eliminate false sharing, and
+comparing the execution time with and without the modifications.
+
+\footnotetext{In their definitions, the authors alternate between considering
+idealized hardware, avoiding false sharing by using small coherence-blocks, or
+a policy -- software or hardware based -- that can place data ideally in the
+memory hierarchy.}
 
 \mynote{Write bg for the McKenney resources, and Drepper's what every programmer...}
 \mynote{Write bg for the (not very hardware-specific) resources used at the outset of the project}
