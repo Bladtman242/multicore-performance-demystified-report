@@ -12,10 +12,10 @@ hashmaps, make cyclic-buffer CAS experiment}
 
 To see the potential impact of false sharing, it is illustrative to look at a
 few contrived example programs. In this section we look at a handful of
-variations of programs that perform integer-increment operations in a multi core
+variations of programs that perform simple operations in a multi core
 setting.
 
-\subsubsection{Uncontended Writes}
+\subsection{Uncontended Writes}
 The first example we examine illustrates the impact of false sharing by running
 simple, uncontended, integer-increment operations in parallel threads. To see
 the impact of false sharing, we observe the time it takes to perform an
@@ -27,7 +27,7 @@ Each thread performs millions of integer-increments. The integers are
 uncontended; each thread has its own integer and performs no read or write
 operations to integers used by the other threads. Since each thread operates on
 its own integer, there is no need for synchronization. Nonetheless, we perform
-the experiment in variants with and without volatile integer declarations, to
+the experiment in variants with and without \texttt{volatile} integer declarations, to
 see the performance impact in both cases.
 
 Since the integers are uncontended, we will take the difference in performance
@@ -39,10 +39,7 @@ experiments are run with 4, 8, and 48 threads on the i5, i7, and xeon platforms,
 respectively.
 
 Figure \ref{fig:uncont} and \ref{fig:uncont-nob} show the average time per
-increment.
-
-\mynote{Include concrete parameters: work is not divided between threads, but is
-additive, lap/desk/serv performs x,y,z ops..}
+increment, as a function of padding.
 
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
@@ -66,7 +63,7 @@ additive, lap/desk/serv performs x,y,z ops..}
 barrier/no-barrier), include values of plots (plots are hard to read), and
 reflect/conclude}
 
-\subsubsection{Contended Writes}
+\subsection{Contended Writes}
 
 In the previous section we examined the performance of uncontended memory
 operations to see the existence and cost of false sharing. In this section, we
@@ -150,11 +147,9 @@ mellem kerner}
 
 \section{Practical Applications}
 While incrementing counters is useful, it is thankfully not the only thing we
-build software for. It is therefore useful to see the effects of false sharing in
-more complicated applications as well.
-
+build software for.
 In this section we examine false sharing in 4 \mynote{Update if it doesn't
-end up 4} parallel programs.
+end up 4} examples of more complicated parallel programs.
 
 First we will look several programs that build histograms. These example
 programs will motivate our approach from course- to fine-grained synchronization
@@ -162,14 +157,243 @@ with padding. One implementation also serves as an example of false sharing in
 lock-free CAS based applications. We then use Quicksort as an example of the
 divide and conquer paradigm, where the division of subproblems limit the need
 for synchronization. We take k-means clustering and a striped hashmap
-implementation as examples of locking applications.
+implementation as examples of locking and lock-striping applications.
 
-\subsubsection{Histogram builder}
-\mynote{needs to be written, so far only some of the plots are included
-(figures \ref{fig:histo-i5},\ref{fig:histo-i7}, and \ref{fig:histo-xeon})}
+\subsection{Histogram builder}
+
+Let us consider the problem of building a histogram: Given a sequence of
+numbers, we wish to build a data structure that maps numbers to their
+frequencies in the sequence:
+
+A simple parallel algorithm for building a histogram presents itself: Divide the
+sequence into a number of equal-sized sections, one for each thread. For each
+element $a$ in its section, have each thread atomically increment a global
+counter (or bucket) representing the frequency of $a$.
+
+All the implementations we consider follow this basic formulation; they differ
+only in how they ensure that the increment operations are atomic. We need to
+ensure atomicity because the numbers in the input sequence may appear multiple
+times, and in different segments, making it possible for more than a single
+thread to increment the same frequency counter at the same time.
+
+The histogram benchmarks are performed with the following parameters: The full
+input sequence consists of 4 million randomly chosen integers $a\in[0,31]$. The
+sequence is split between 4, 8, and 48 threads for the i5, i7, and xeon platform
+respectively. The more threads, the less work per thread. 32 buckets are used,
+one for each possible number in the input.
+
+\subsubsection{Course-grained locking}
+The simplest solution is for the threads to take a single, shared lock anytime
+they increment a frequency counter. This solution is slow. Only reading
+from the input sequence is parallelised. At any time,
+only one thread can be incrementing a counter.
+
+\begin{code}
+\begin{Verbatim}[frame=single]
+  Object lock = new Object();
+  let taskCount parallel tasks do {
+    final int from = ..., to = ...;
+    for(int j = from; j < to; ++j) {
+      synchronized(lock){
+        counters[inputSequence[j]].value++;
+      }
+    }
+  }
+\end{Verbatim}
+	\caption{Simplified code for the threads in the course-grained locking
+	version of the histogram problem.}
+\end{code}
+
+The table in figure \ref{table:histo-global} shows the execution times of this
+solution to the histogram problem. At we would expect, it scales poorly with the number of cores.
+
+\begin{figure}[hbtp]
+	\centering
+	\begin{tabular}{l r r}
+		\hline
+		\hline
+		Platform & Time (ns) & SD (\%) \\
+		\hline
+		\input{plots/histo-lock-global}
+		\hline
+		\hline
+	\end{tabular}
+	\caption{The histogram problem using a single global lock. Time is per
+	input-element per thread, the standard deviation (SD) is given as a
+	percentage of the total execution time.}
+	\label{table:histo-global}
+\end{figure}
+
+We will not measure it, but there is a potential for false sharing in this
+implementation. Consider the following sequence of operations, where we assume
+counter0 and counter1 are in the same cache line:
+
+\begin{enumerate}
+	\item CPU0 updates counter 0. The cache line is left in CPU0's cache.
+	\item \label{list:invalidation} CPU1 updates counter 1. The cache line is invalidated in CPU0's
+		cache.
+	\item \label{list:unneededread} CPU0 updates counter 0. The counter is not in CPU0's cache, and
+		must be read from CPU1's cache instead.
+\end{enumerate}
+
+The cache miss in step \ref{list:unneededread} is unnecessary. It only occurs
+because the two counters share a cache line, and because the other counter was
+updated in step \ref{list:invalidation} by a different CPU core. The impact of
+false sharing here is likely overshadowed by the poor choice of locking scheme.
+
+There is another kind of false communication here that has nothing to do with
+sharing of cache lines:
+When a thread takes the lock, updates from previous threads are guaranteed to be
+made visible to it. Except for updates to the counter the thread is trying to
+increment, this is unnecessary.
+
+\subsubsection{Fine-grained locking}
+A better solution is to have different counters guarded by different locks. This
+way, threads can perform all their work in parallel, except when different
+threads work on counters guarded by the same lock. For practical applications
+the ideal level of granularity should be determined by experiment. In this
+experiment I use 32 locks: One lock for each bucket.
+
+\begin{code}
+\begin{Verbatim}[frame=single]
+  Object[] locks = ...;
+  let taskCount parallel tasks do {
+    final int from = ..., to = ...;
+    for(int j = from; j < to; ++j) {
+      int a = inputSequence[j];
+      synchronized(locks[a]){
+        counters[a].value++;
+      }
+    }
+  }
+\end{Verbatim}
+\end{code}
+
+The improved level of parallelism increases the potential for false sharing: In
+the previous version only one thread could perform writes at a time. In this
+version, threads holding different locks can in theory spend arbitrary amounts
+of time invalidating each other's cache lines without doing any actual work.
+
+There are two clear candidates for false sharing: The locks and the counters.
+Neither are stored directly in the arrays: Locks must be object types, and are
+hence stored as references, and the integers used for the counters are stored in
+placeholder objects so we can declare them as \texttt{volatile}. False sharing
+of the actual array elements should therefore be irrelevant, but if the objects
+are densely allocated, e.g. in a tight for-loop, they can still be placed
+back-to-back in memory.
+
+We measure the impact of false sharing by benchmarking versions with different
+amounts of padding between the locks and counters.
+
+\mynote{Because the elements/locks are objects, there is an additional,
+unadvertised,  12 bytes of padding used for the counters, and something similar
+for the locks (I can't say where in the object header the actual lock is, if it
+is even in the object header). This should e noted somewhere, but probably not
+here, as it goes for most of the benchmarks.}
+
 \input{histo-plots.tex}
 
-\subsubsection{Divide and Conquer \mynote{avoidance? Quicksort}}
+Figures \ref{fig:histo-local-i5}, \ref{fig:histo-local-i7}, and
+\ref{fig:histo-local-xeon} show the total execution times for the i5, i7, and
+xeon platforms respectively. Each plot shows the execution time of the
+histogram problem, as a function of the amount of padding between the counters.
+The third axis -- the amount of padding between the locks -- is unrolled into
+different plots.
+
+The effect is smallest on the i5 platform: Using 128 bytes padding between
+counters, and no padding between locks, yields a 10\% improvement on not using
+padding. Padding the locks does not seem to benefit performance, and even makes
+it worse in some cases.
+
+On the i7 platform, padding locks and counters both benefits performance.
+Padding 128 bytes between counters and 112 bytes between locks yields a 16.9\%
+percent improvement on not using padding.
+
+The most significant effect is seen on the xeon platform. Like on the i7
+platform, using padding is beneficial for both data structures, but here the
+benefit from padding the locks is much more pronounced. Using 128 bytes of
+padding for the counters and 112 bytes for the locks yields a 71.8\% improvement
+on not using padding, indicating that most of the time in the unpadded version
+is spent on cache coherence overhead.
+
+There is a noteworthy caveat: The experiment runs with 48 threads on the xeon
+platform, but there are only 32 locks.
+That this cannot not be solved simply by increasing the
+number of locks, as there are still only 32 distinct values in the input, and
+therefore only 32 counters.
+The scarcity of locks likely limits
+throughput, but the false sharing impact should be the same without
+this limitation, which is what we are concerned with.
+
+It is not surprising that the platform with the most cores suffers worst. The
+more threads running in parallel, the more chances to invalidate a cache line
+that is relevant to another core. Furthermore, the invalidation messages must be
+sent to all the other cores, and processors must wait for acknowledgement
+messages from all the cores, so there is a lot more communication occurring due
+the coherence protocol. The larger cache hierarchy likely also means larger
+physical distances, which in turns makes communication slower.
+
+While our observations seem to agree with our understanding of false sharing,
+two new mysteries present themselves: It is not clear why the execution time
+keeps improving past 64-bytes padding, and it is not clear why padding the locks
+has such a modest impact.
+
+We would expect the performance to stop improving abruptly around 64
+bytes, as that is the cache line size used by our hardware architectures.
+One explanation for the continued improvements is the cache prefetch mechanism.
+It is possible that the prefetch mechanism causes more than a single cache line
+to be fetched. This is the explanation given for why the \texttt{contented}
+annotation causes 128 bytes of padding to inserted on openjdk, under the
+assumption that cache lines are half that size\cite{openjdkmailcontended}.
+This explanation is in agreement with the Intel optimization
+manual\cite{inteloptimize}, which states that the spatial prefetcher
+"strives to complete every cache line fetched to the L2 cache with the pair line
+that completes it to a 128-byte aligned chunk"\footnotemark. While this
+prefetching does not incur a false-sharing overhead, it will leave an additional
+cache line in the CPU's cache. Another CPU might then later write to that
+cache line, incurring unnecessary coherence overhead. The additional padding
+does not prevent the prefetcher from loading the irrelevant cache line, but it
+does prevent other threads from ever writing to it.
+
+An explanation for the other mysterious artifact, the modest impact of padding
+the locks, is more elusive. It seems to make sense that using a small number of
+threads compared to the number of locks limits the impact of false sharing, as
+it lessens the likelihood of threads working on the same cache lines. This
+intuition fails to explain why the impact of padding the counters is larger: The
+memory layout of the locks should be exactly the same as that of the counters,
+and there are equally many of them.
+
+\footnotetext{It is not entirely clear from the manual which microarchitectures
+this applies to. It is stated for the Sandy Bridge microarchitecture, and seems
+to apply to those that succeed it as well.}
+
+\subsubsection{Compare-and-swap}
+
+\mynote{Figures
+\ref{fig:histo-cas-i5},\ref{fig:histo-cas-i7},\ref{fig:histo-cas-xeon}}
+
+\begin{figure}[hbpt]
+\graphicspath{{plots/}}
+\input{plots/histo-cas-i5.tex}
+\caption{CAS i5}
+\label{fig:histo-cas-i5}
+\end{figure}
+
+\begin{figure}[hbpt]
+\graphicspath{{plots/}}
+\input{plots/histo-cas-i7.tex}
+\caption{CAS i7}
+	\label{fig:histo-cas-i7}
+\end{figure}
+
+\begin{figure}[hbpt]
+\graphicspath{{plots/}}
+\input{plots/histo-cas-xeon.tex}
+\caption{CAS xeon}
+	\label{fig:histo-cas-xeon}
+\end{figure}
+
+\subsection{Divide and Conquer \mynote{avoidance? Quicksort}}
 A famous example of a divide-and-conquer algorithm, quicksort recursively
 divides the sorting problem into independent subproblems, combining partial
 results into a solution for the whole problem. With respect to synchronization,
@@ -177,7 +401,7 @@ we can see this problem division as a kind of avoidance: If the sub-problems are
 independent, they can be solved in parallel on a multicore system without any
 communication - and therefore synchronization - between parallel processes.
 Of course, we need to ensure that solutions are visible \textit{after} they are
-found, but no communication is needed while the programs run.
+found, but no communication is needed while the threads work.
 
 \mynote{quicksort insert code snippet}
 
@@ -194,7 +418,8 @@ There is no step to combine the results of two subproblems, as calls operate
 in-place on the same shared array. While this may \textit{seem} like communication
 between threads, there is only a single thread operating on a given
 array-segment at any time. The only relevant communication is that of the
-constructor parameters to the recursive calls, and the array. Operations in
+constructor parameters to the recursive calls, and the reference to the array
+itself. Operations in
 recursive calls are guaranteed to be visible to the caller because of the
 call to \java{join()}.
 
@@ -202,7 +427,7 @@ call to \java{join()}.
 
 \mynote{Analyze/conclude}
 
-\subsubsection{Locking \mynote{kmeans, striped hashmap}}
+\subsection{Locking \mynote{kmeans, striped hashmap}}
 As examples of locking applications, we examine an implementation of k-means
 clustering, as suggested in the January 2017 exam in Practical Concurrent and
 Parallel Programming (PCPP) at the IT-Univeristy of Copenhagen \cite{kmeansexam,

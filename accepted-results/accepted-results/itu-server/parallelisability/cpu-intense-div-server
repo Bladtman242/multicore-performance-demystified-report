@@ -1,0 +1,10 @@
+cpu-intense-div-server    1   4654500009.4 ns 142528903.97          2
+cpu-intense-div-server    2   2399414845.4 ns 42511225.30          2
+cpu-intense-div-server    4   1287041729.1 ns 13360107.89          2
+cpu-intense-div-server    8    651775698.1 ns 11354915.96          2
+cpu-intense-div-server    16    451574092.9 ns 6718152.58          2
+cpu-intense-div-server    32    228330498.9 ns 1442994.18          2
+cpu-intense-div-server    64    226279221.9 ns 2020714.72          2
+cpu-intense-div-server    12    432054746.4 ns   26665.11          2
+cpu-intense-div-server    24    303665531.4 ns 1343033.39          2
+cpu-intense-div-server    48    156418309.6 ns 9142469.88          2

@@ -1,0 +1,15 @@
+readtimes-padded-cyclic-array-server 8    102574039.4 ns 1676671.08          4
+readtimes-padded-cyclic-array-server 16    101987860.7 ns   34998.95          4
+readtimes-padded-cyclic-array-server 32    134617716.3 ns  783448.22          2
+readtimes-padded-cyclic-array-server 64    183485950.4 ns 8532719.65          2
+readtimes-padded-cyclic-array-server 128    187408321.3 ns  207076.82          2
+readtimes-padded-cyclic-array-server 256    442026213.8 ns 4259618.65          2
+readtimes-padded-cyclic-array-server 512    632708386.1 ns 6915283.44          2
+readtimes-padded-cyclic-array-server 1024    711729778.0 ns 3495582.41          2
+readtimes-padded-cyclic-array-server 2048    827998006.1 ns 9008142.43          2
+readtimes-padded-cyclic-array-server 4096    973670397.3 ns 3876769.78          2
+readtimes-padded-cyclic-array-server 8192   1143798675.8 ns 7394385.01          2
+readtimes-padded-cyclic-array-server 16384   1269785484.4 ns 18444689.45          2
+readtimes-padded-cyclic-array-server 32768   2671880527.1 ns 41276300.68          2
+readtimes-padded-cyclic-array-server 61440   4571455567.0 ns 41368342.33          2
+readtimes-padded-cyclic-array-server 65536   4628835228.7 ns 137057470.98          2

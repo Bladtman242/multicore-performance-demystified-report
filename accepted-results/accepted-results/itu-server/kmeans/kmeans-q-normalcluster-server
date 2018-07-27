@@ -1,0 +1,7 @@
+kmeans-q-normalcluster-server 1   7665997011.7 ns 2254091086.53          2
+kmeans-q-normalcluster-server 4   6308253277.1 ns 1721550929.69          2
+kmeans-q-normalcluster-server 8   8826560146.2 ns 2727205162.30          2
+kmeans-q-normalcluster-server 24   8712399842.7 ns 2046508235.91          2
+kmeans-q-normalcluster-server 32  25362386858.2 ns 9049890272.85          2
+kmeans-q-normalcluster-server 48  34247476105.8 ns 9930067142.20          2
+kmeans-q-normalcluster-server 64  26743934949.9 ns 5307376704.91          2

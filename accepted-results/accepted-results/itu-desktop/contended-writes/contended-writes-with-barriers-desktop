@@ -1,0 +1,5 @@
+contended-writes-with-barriers-desktop 1     95684586.0 ns  169384.64          4
+contended-writes-with-barriers-desktop 2    783442476.4 ns 20504520.06          2
+contended-writes-with-barriers-desktop 4   1789464062.4 ns 31406343.67          2
+contended-writes-with-barriers-desktop 8   2157810211.5 ns 1441791.14          2
+contended-writes-with-barriers-desktop 16   4424371414.8 ns 4506668.37          2

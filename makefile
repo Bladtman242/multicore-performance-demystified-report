@@ -16,4 +16,4 @@ clean:
 	rm tmp/*
 
 plots:
-	(cd plots; gnuplot runtimes-for-plotting.gnu)
+	(cd plots; gnuplot runtimes-for-plotting.gnu; ./tables.sh)

@@ -1,0 +1,7 @@
+counters-no-barrier-array-desktop 0   1730742438.3 ns 95308794.09          2
+counters-no-barrier-array-desktop 4    919819344.2 ns 93251008.61          2
+counters-no-barrier-array-desktop 8    161531419.3 ns 4544435.91          2
+counters-no-barrier-array-desktop 16    161175009.2 ns 3119467.72          2
+counters-no-barrier-array-desktop 32    161939626.6 ns 4259884.10          2
+counters-no-barrier-array-desktop 64    161167130.2 ns 2266659.53          2
+counters-no-barrier-array-desktop 128    161462923.1 ns 3713059.70          2

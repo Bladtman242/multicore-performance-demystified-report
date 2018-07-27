@@ -1,0 +1,4 @@
+kmeans-q-paddedcluster-desktop 1   8908966753.2 ns 1835688711.97          2
+kmeans-q-paddedcluster-desktop 4   4427463701.3 ns 747866287.37          2
+kmeans-q-paddedcluster-desktop 8   3235100900.0 ns 1145355102.09          2
+kmeans-q-paddedcluster-desktop 16   3540687286.0 ns 1285020988.67          2

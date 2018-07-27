@@ -1,0 +1,7 @@
+counters-barrier-array    0    514270547.3 ns 54877235.55          2
+counters-barrier-array    4    343261224.2 ns 146887145.22          2
+counters-barrier-array    8    104468979.9 ns 1149868.41          4
+counters-barrier-array    16    105196703.7 ns 1395318.52          4
+counters-barrier-array    32    104348355.9 ns 1800659.91          4
+counters-barrier-array    64    105395716.1 ns 2926053.33          4
+counters-barrier-array    128    105394097.0 ns 1746620.78          4

@@ -1,0 +1,15 @@
+readtimes-cyclic-array-server 8     50979102.8 ns   14736.82          8
+readtimes-cyclic-array-server 16     50977449.1 ns   12106.26          8
+readtimes-cyclic-array-server 32     51068846.2 ns   14865.62          8
+readtimes-cyclic-array-server 64     88351834.9 ns  127747.41          4
+readtimes-cyclic-array-server 128    105550029.4 ns  116047.29          4
+readtimes-cyclic-array-server 256    130077688.8 ns 5300596.14          4
+readtimes-cyclic-array-server 512    353599196.6 ns  320390.76          2
+readtimes-cyclic-array-server 1024    466618047.3 ns  323690.17          2
+readtimes-cyclic-array-server 2048    522144923.9 ns  484316.31          2
+readtimes-cyclic-array-server 4096    560579907.7 ns 16217445.92          2
+readtimes-cyclic-array-server 8192    636289068.7 ns 14729563.01          2
+readtimes-cyclic-array-server 16384    680235589.7 ns 19687931.75          2
+readtimes-cyclic-array-server 32768   1163038593.3 ns 38666676.19          2
+readtimes-cyclic-array-server 61440   2434642558.3 ns 7119479.57          2
+readtimes-cyclic-array-server 65536   2542565370.1 ns 17657652.66          2

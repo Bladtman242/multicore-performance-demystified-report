@@ -1,0 +1,10 @@
+io-intense-sum-server     1   1331692434.8 ns 38743377.12          2
+io-intense-sum-server     2    702676224.1 ns 20190328.74          2
+io-intense-sum-server     4    383246641.3 ns 16351366.64          2
+io-intense-sum-server     8    256696592.1 ns 1087270.60          2
+io-intense-sum-server     16    271932587.4 ns 5785489.23          2
+io-intense-sum-server     32    232149179.6 ns  246226.55          2
+io-intense-sum-server     64    233253850.4 ns 1130313.76          2
+io-intense-sum-server     12    247609492.4 ns  125740.28          2
+io-intense-sum-server     24    247057392.5 ns 1638323.35          2
+io-intense-sum-server     48    229352246.3 ns  184132.19          2

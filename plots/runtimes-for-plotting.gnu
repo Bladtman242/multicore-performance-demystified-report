@@ -16,6 +16,7 @@ set term epslatex linewidth 2
 #plot '../accepted-results/itu-server/cpu-baseline/cpuload' with linespoints title "itu-server-passive-cpuload"
 
 set output "nobarrier.tex"
+set key off
 incsNoBarrier=66000000
 incsBarrier=6000000
 
@@ -56,6 +57,7 @@ plot '../accepted-results/x1/intcounters-4threads/counters-barrier-local' using 
 #
 
 set output "readtimes.tex"
+set key on
 set size 1,0.77
 set yrange [0:]
 set xrange [0:]
@@ -174,11 +176,30 @@ plot '../accepted-results/itu-server/contended-writes/contended-writes-with-barr
 #     '< sort -nk2 ../accepted-results/itu-server/parallelisability/cpu-intense-div-server' using 2:3:5 with errorlines title "cpu-intense-server", \
 #     '< sort -nk2 ../accepted-results/itu-server/parallelisability/mixed-intensive-server' using 2:3:5 with errorlines title "mixed-server"
 
+set key on
+unset size
+set yrange [0:]
+threadsPers=4
+threadsDesk=8
+threadsServ=48
+work=4000000
+persWorkPer=work/threadsPers
+deskWorkPer=work/threadsDesk
+servWorkPer=work/threadsServ
+
+set output "histo-cas-i5.tex"
+plot '../accepted-results/x1/histograms/Histo-cas' using 2:($3/persWorkPer):xticlabels(2) with linespoints title "histogram-cas-i5", \
+
+set output "histo-cas-i7.tex"
+plot '../accepted-results/itu-desktop/histograms/Histo-cas' using 2:($3/deskWorkPer):xticlabels(2) with linespoints title "histogram-cas-i7", \
+
+set output "histo-cas-xeon.tex"
+plot '../accepted-results/itu-server/histograms/Histo-cas' using 2:($3/servWorkPer):xticlabels(2) with linespoints title "histogram-cas-xeon", \
+
+set key off
 set size 0.4,0.5
 set lmargin 2.6
 set rmargin 2.6
-
-unset key
 
 set xtics 0,32,128 rotate by 45 right
 set mxtics 2

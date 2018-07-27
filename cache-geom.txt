@@ -1,0 +1,4 @@
+csize = sets * setsize
+ways = 8
+setsize = ways * 64 = 512 byteso
+sets = 4096

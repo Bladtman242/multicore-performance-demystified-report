@@ -1,0 +1,7 @@
+counters-no-barrier-array-server 0   4354244185.6 ns 1123167476.87          2
+counters-no-barrier-array-server 4   1902478195.0 ns 188214824.00          2
+counters-no-barrier-array-server 8    222221080.9 ns 15352580.15          2
+counters-no-barrier-array-server 16    224211520.0 ns 23358490.24          2
+counters-no-barrier-array-server 32    219075450.8 ns 7624007.35          2
+counters-no-barrier-array-server 64    224491588.1 ns 24392883.95          2
+counters-no-barrier-array-server 128    221893482.6 ns 11432910.61          2

@@ -14,6 +14,15 @@
 \usepackage[numbers]{natbib}
 \usepackage{subcaption}
 \usepackage{rotating}
+\usepackage{listings}
+\usepackage{newfloat}
+\usepackage{fancyvrb}
+
+%define a new float environment, like figure and table, for code snippets
+\DeclareFloatingEnvironment[
+    placement=hbtp,
+    name=Code snippet,
+]{code}
 
 %redefine percentage sign to be a little smaller
 \let\oldpct\%
@@ -49,12 +58,7 @@
 
 \input{background.tex}
 
-\chapter{Java and memory}
-\mynote{Explain relevant details of java memory layout, to the point where the
-Method section can refer back here to say that we can't fully control the layout
-for our benchmarks}
-
-\mynote{Use and introduce the JOL tool}
+\input{javamemory.tex}
 
 \chapter{Memory operations are expensive}
 \mynote{(may be "the new FLOPS")}

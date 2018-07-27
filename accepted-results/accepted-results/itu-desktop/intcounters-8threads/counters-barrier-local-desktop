@@ -1,0 +1,7 @@
+counters-barrier-local-desktop 0    533066724.4 ns 22617811.90          2
+counters-barrier-local-desktop 4    359072526.8 ns 22990286.58          2
+counters-barrier-local-desktop 8     65186212.7 ns 2368828.14          4
+counters-barrier-local-desktop 16     65126888.7 ns 2102850.56          4
+counters-barrier-local-desktop 32     62890647.1 ns   80917.84          4
+counters-barrier-local-desktop 64     64685081.7 ns 2076411.37          4
+counters-barrier-local-desktop 128     64356679.9 ns 1794030.74          4

@@ -1,0 +1,6 @@
+contended-writes-and-reads-with-barriers 1    586946183.0 ns 161680513.50          2
+contended-writes-and-reads-with-barriers 2   1234256009.4 ns 80615479.63          2
+contended-writes-and-reads-with-barriers 3   1720699840.1 ns 32586448.69          2
+contended-writes-and-reads-with-barriers 4   2296381143.9 ns 50584475.04          2
+contended-writes-and-reads-with-barriers 5   2499473637.7 ns 29015843.61          2
+contended-writes-and-reads-with-barriers 6   3144591655.4 ns 35754563.69          2
