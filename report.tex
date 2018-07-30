@@ -17,6 +17,8 @@
 \usepackage{listings}
 \usepackage{newfloat}
 \usepackage{fancyvrb}
+\usepackage{csquotes}
+\MakeOuterQuote{"}
 
 %define a new float environment, like figure and table, for code snippets
 \DeclareFloatingEnvironment[
@@ -31,14 +33,14 @@
 %todo/notes command
 \newcommand\mynote[1]{\noindent\textcolor{red}{\{#1\}}}
 
-%java name styling
+%Java name styling
 \newcommand\java[1]{\texttt{#1}}
 
 %\setcounter{secnumdepth}{0}
 \begin{document}
 \title{Multicore Performance Demystified\\
 \hfill \break
-\large Hardware matters for java developers
+\large Hardware matters for Java developers
 }
 \author{
 	Sigurt Bladt Dinesen
@@ -67,7 +69,7 @@
 
 \chapter{Method}
 \mynote{benchmarking, limitations, and concessions (incl. background
-noise in bmarks, java/hw memory-layout impedance)}
+noise in bmarks, Java/hw memory-layout impedance)}
 \mynote{parallelizability plots may go here, to describe the parameters of the
 experiments (or it may go in the experiments section)}
 

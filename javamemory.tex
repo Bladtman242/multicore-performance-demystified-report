@@ -1,5 +1,5 @@
 \chapter{Java and memory}
-\mynote{Explain relevant details of java memory layout, to the point where the
+\mynote{Explain relevant details of Java memory layout, to the point where the
 Method section can refer back here to say that we can't fully control the layout
 for our benchmarks}
 \mynote{Use and introduce the JOL tool}
@@ -7,3 +7,39 @@ for our benchmarks}
 As noted previously, the way programming languages model memory is very
 different from how it is implemented in hardware. This is especially true for
 high-level languages, and doubly so for garbage-collected languages like Java.
+
+Java programmers cannot directly control things like memory barriers and memory
+layout. Instead we get the effect of barriers through judicious use of the
+\java{synchronized} and \java{volatile} keywords, and the guarantees given by
+the Java Language Specification\cite{javaspec} and the classes in the
+\java{java.util.concurrent} package.
+The language specification gives no such guarantees regarding memory
+layout, so we have only limited control over it: We can take steps to affect how
+data is laid out in memory, and we can verify the effectiveness of our efforts
+by benchmarking our programs, only we do not have guarantees that our
+optimizations will work on other Java runtimes, or with future Java versions.
+
+The following sections explain briefly the relationship between Java's
+concurrency constructs and the memory hierarchy as described in chapter
+\ref{chap:arch}
+
+\section{Data sharing}
+In Java, the concept of \textit{happens-before order} most closely captures the
+notion of memory barriers, in that it guarantees that memory operations are
+visible to relevant threads/CPU-cores, and that they happen in the expected
+order.
+
+\section{Memory layout}
+Almost no promises are made regarding memory layout in Java. It appears to be
+true that objects as well as arrays are stored as contiguous memory segments,
+but this entirely at the discretion of the implementers of the Java virtual
+machine in use. It seems that the only guarantees are that instance
+fields, static fields, and array \textit{elements} are stored on the heap, and
+that local variables, formal method parameters, and exception handler parameters
+are not\cite[chapter~17]{javaspec}\cite[chapter~2]{jvmspec}. The Java memory
+model is only concerned with data allocated on the heap, as stack memory is not
+shared between threads. In fact, the Java Virtual Machine
+Specification\cite{jvmspec} says very little about how the heap must be defined,
+except that it is shared between threads.
+
+

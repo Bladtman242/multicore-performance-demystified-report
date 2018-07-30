@@ -135,7 +135,7 @@
 		\input{plots/Histo-lock-local-128-itu-server.tex}
 		\caption{128 bytes}
 	\end{subfigure}
-	\caption{The histogram problem on the xeon platform. Here padding has a
+	\caption{The histogram problem on the Xeon platform. Here padding has a
 	large effect, both for the buckets and the locks. The best time is
 	118.62 miliseconds, achieved by padding the locks with 112 bytes, and
 	the histograms with 128 bytes. That is a 71.8\% improvement on not using
@@ -144,6 +144,6 @@
 	different amount of padding between the locks (specified beneath each
 	plot). The plots show the running time of the histogram problem as a
 	function of the amount of padding between the histogram buckets in
-	bytes. Each tick is 100 milliseconds. The axis starts at 0.}
+	bytes. Each y-tick is 100 milliseconds. The axis starts at 0.}
 	\label{fig:histo-local-xeon}
 \end{figure}
