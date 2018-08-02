@@ -1,5 +1,0 @@
-contended-writes-desktop  1     67591973.0 ns  297433.70          4
-contended-writes-desktop  2     67864102.7 ns  100744.27          4
-contended-writes-desktop  4     71561625.7 ns 1596479.27          4
-contended-writes-desktop  8    235879331.1 ns  846823.31          2
-contended-writes-desktop  16    483034614.4 ns 3315947.62          2

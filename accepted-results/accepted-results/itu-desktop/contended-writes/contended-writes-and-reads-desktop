@@ -1,5 +1,0 @@
-contended-writes-and-reads-desktop 1     71101441.2 ns 2977125.08          4
-contended-writes-and-reads-desktop 2     71133481.1 ns 2169055.87          4
-contended-writes-and-reads-desktop 4    143930886.0 ns 4663218.17          2
-contended-writes-and-reads-desktop 8    262529494.3 ns 3654145.64          2
-contended-writes-and-reads-desktop 16    491113881.0 ns 8131533.18          2

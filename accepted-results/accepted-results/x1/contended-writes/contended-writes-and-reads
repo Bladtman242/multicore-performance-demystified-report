@@ -1,6 +1,0 @@
-contended-writes-and-reads 1    139652550.1 ns 59188644.37          2
-contended-writes-and-reads 2    263579601.4 ns 48963483.05          2
-contended-writes-and-reads 3    349480867.8 ns 2686976.33          2
-contended-writes-and-reads 4    411101181.5 ns 15068846.43          2
-contended-writes-and-reads 5    501945222.6 ns 9557407.70          2
-contended-writes-and-reads 6    583240446.6 ns 11199759.91          2

@@ -1,9 +1,0 @@
-mixed-intensive-server    2   4660771743.9 ns 109494588.20          2
-mixed-intensive-server    4   2459094882.3 ns 33378465.34          2
-mixed-intensive-server    8   1317029080.9 ns 11195383.31          2
-mixed-intensive-server    16    748760612.0 ns 23658277.14          2
-mixed-intensive-server    32    460806252.8 ns 27244617.17          2
-mixed-intensive-server    64    374310213.2 ns 11506483.30          2
-mixed-intensive-server    12    916428177.1 ns 13900436.96          2
-mixed-intensive-server    24    580195121.2 ns 22097121.51          2
-mixed-intensive-server    48    357725302.3 ns 7684168.94          2

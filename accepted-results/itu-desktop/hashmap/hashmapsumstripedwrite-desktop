@@ -1,0 +1,9 @@
+hashmapsum-stripedwritemap 0   1007740904.5 ns 15107466.79          2
+hashmapsum-stripedwritemap 16    927232608.2 ns 37381314.66          2
+hashmapsum-stripedwritemap 32    859559992.1 ns 27515757.21          2
+hashmapsum-stripedwritemap 48    815977901.8 ns 37603535.61          2
+hashmapsum-stripedwritemap 64    745492116.5 ns 23358143.78          2
+hashmapsum-stripedwritemap 80    760025668.0 ns 15936221.12          2
+hashmapsum-stripedwritemap 96    760533149.5 ns 20130845.84          2
+hashmapsum-stripedwritemap 112    746849941.7 ns 21962710.02          2
+hashmapsum-stripedwritemap 128    752298670.5 ns 28500172.32          2

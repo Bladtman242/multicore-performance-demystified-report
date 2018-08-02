@@ -1,5 +1,0 @@
-contended-writes-array-desktop 1     90998773.4 ns 3093324.84          4
-contended-writes-array-desktop 2     75911348.9 ns 2502563.00          4
-contended-writes-array-desktop 4     90137126.1 ns 3861151.00          4
-contended-writes-array-desktop 8    246430318.8 ns 2839959.02          2
-contended-writes-array-desktop 16    485514105.5 ns 2508405.96          2

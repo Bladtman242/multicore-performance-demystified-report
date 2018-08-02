@@ -1,7 +1,0 @@
-qsort-by-padding-padsome-array 0    106117635.5 ns 5937222.57          4
-qsort-by-padding-padsome-array 4    118952662.4 ns 24254964.58          4
-qsort-by-padding-padsome-array 8    110347928.1 ns 6434370.04          4
-qsort-by-padding-padsome-array 16    106716091.1 ns 5633547.89          4
-qsort-by-padding-padsome-array 32    105416462.4 ns 10461715.08          4
-qsort-by-padding-padsome-array 64    107845807.5 ns 9480355.18          4
-qsort-by-padding-padsome-array 128    104546554.9 ns 8619904.90          4

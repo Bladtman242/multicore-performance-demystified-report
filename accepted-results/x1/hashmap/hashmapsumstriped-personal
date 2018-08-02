@@ -1,0 +1,9 @@
+hashmapsumstriped-personal 0    717275922.6 ns 78357146.41          2
+hashmapsumstriped-personal 16    689604980.1 ns 50933023.79          2
+hashmapsumstriped-personal 32    640946089.9 ns 75122941.65          2
+hashmapsumstriped-personal 48    597062689.2 ns 32283358.06          2
+hashmapsumstriped-personal 64    631590483.6 ns 45753520.37          2
+hashmapsumstriped-personal 80    651405123.5 ns 83287526.45          2
+hashmapsumstriped-personal 96    696147011.0 ns 67381193.47          2
+hashmapsumstriped-personal 112    619050954.1 ns 50644618.00          2
+hashmapsumstriped-personal 128    642574147.9 ns 70673148.41          2

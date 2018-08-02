@@ -1,7 +1,0 @@
-qsort-by-cutoff-native-array 0    459688788.6 ns 134905004.04          2
-qsort-by-cutoff-native-array 4    385283091.1 ns 89380308.44          2
-qsort-by-cutoff-native-array 8    334620675.4 ns 5471185.41          2
-qsort-by-cutoff-native-array 16    308297707.9 ns 6246074.63          2
-qsort-by-cutoff-native-array 32    286204538.2 ns 7533503.13          2
-qsort-by-cutoff-native-array 64    274287548.7 ns 3546375.51          2
-qsort-by-cutoff-native-array 128    273278962.4 ns 6506363.84          2

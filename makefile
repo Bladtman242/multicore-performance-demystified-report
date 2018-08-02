@@ -15,5 +15,8 @@ preview: *.tex tmp
 clean:
 	rm tmp/*
 
-plots:
-	(cd plots; gnuplot runtimes-for-plotting.gnu; ./tables.sh)
+plots: tables
+	(cd plots; gnuplot runtimes-for-plotting.gnu;
+
+tables:
+	(cd plots; ./tables.sh)
