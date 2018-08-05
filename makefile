@@ -1,6 +1,6 @@
 .PHONY: clean plots
 
-report.pdf: tmp/report.pdf
+sigurt-sidi-thesis.pdf: tmp/report.pdf
 	cp $< $@
 
 tmp:
