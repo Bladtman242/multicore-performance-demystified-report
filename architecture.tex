@@ -53,7 +53,7 @@ times slower.
 
 \section{Main memory}
 The main memory functions as a kind of backbone of the memory hierarchy. It is
-large (often in the tens of gigabytes), and when working with high-level
+large (often in the tens of gibibytes), and when working with high-level
 languages, we tend to think about the entire memory
 hierarchy in terms of how the main memory works: A contiguous storage space,
 divided into fixed chunks of equal size, each of which can be
@@ -120,7 +120,7 @@ poorly as we would have to store the memory addresses in addition to the cached
 values. Furthermore, any read or write operation must search the cache for the
 relevant memory address. While this may sound simple enough to software
 designers, cache behaviours are implemented as electronic circuitry. For these
-reasons, large caches -- such as the multi-kilobyte L1 caches closest to the CPU
+reasons, large caches -- such as the multi-kibibyte L1 caches closest to the CPU
 cores -- are not fully associative. Instead, set-associative caches are used
 \cite{whatprogrammersshouldknow} \cite{mckenny-barriers}.
 
@@ -142,7 +142,7 @@ Intel's x86-64 architectures use 64-byte cache-lines\cite{inteloptimize}.
 The downside of set-associative caches is, that unlike fully associative
 caches, they cannot cache an arbitrary set of memory entries: In a 2-way
 set-associative cache, only two entries whose addresses hash to the same set can
-be stored at a time. If a new entry hashes to the same set, one of the two
+be stored at a time. If a third entry hashes to the same set, one of the two
 first will be evicted from the cache, regardless of how much free space is in
 the other sets. Indeed it is possible for a program to use only memory
 addresses that hash to the same set, effectively only utilizing a small portion
@@ -190,7 +190,7 @@ write to main memory without the values being cached.
 
 \subsection{Data sharing}
 The fact that writes are buffered in the caches is our first hint that
-multicore programming is non-trivial. As different CPU cores may store copies
+multicore programming is non-trivial. As different CPU cores store copies
 of data from main memory in their own caches (and in registers as well), it is
 possible for different cores to have different ideas of what the value stored at
 a certain memory address is.
@@ -205,21 +205,6 @@ performance in programs with false sharing.
 \mynote{Continue writing: write-back caches (as described by drepper), MESI
 state states, store-buffers and invalidation queues (explanation of
 false-sharing impact)}
-
-\begin{figure}[hbpt]
-	\graphicspath{{plots/}}
-	\begin{subfigure}{1\textwidth}
-		\input{plots/readtimes.tex}
-	\end{subfigure}
-	\begin{subfigure}{1\textwidth}
-		\input{plots/readtimes2.tex}
-	\end{subfigure}
-	\begin{subfigure}{1\textwidth}
-		\input{plots/readtimes3.tex}
-	\end{subfigure}
-	\caption{Random cyclic reads. The average read time measured over
-	$2^{25}$ reads as a function of the working-set size in bytes. \mynote{I
-	should adjust the colors so they are consistent across plots, and maybe
-	remove the legends}}
-	\label{fig:readtimes}
-\end{figure}
+\mynote{mention that the unit here is technically a "block". Cache line refers
+to a set/way pair, but cache-line and block are used interchangeably in
+literature}

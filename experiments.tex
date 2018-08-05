@@ -1,15 +1,75 @@
 \chapter{Experiments}
 \label{sec:experiments}
 
-\mynote{Comment high std dev where relevant}
+\section{Preliminary Experiments}
+
+\subsection{CPU Idle Load}
+\begin{figure}[hbpt]
+	\graphicspath{{plots/}}
+	\begin{subfigure}{1\textwidth}
+		\input{plots/cpuloadx1.tex}
+		\caption{i5}
+	\end{subfigure}
+	\begin{subfigure}{1\textwidth}
+		\input{plots/cpuload-desktop.tex}
+		\caption{i7}
+	\end{subfigure}
+	\begin{subfigure}{1\textwidth}
+		\input{plots/cpuload-server.tex}
+		\caption{Xeon}
+	\end{subfigure}
+	\caption{CPU baselines for benchmarks. The x-axes show CPU load in
+	percent, as reported by the operating system (100\% load corresponds to
+	all cores being busy 100\% of the time). The y-axes show time in minutes.}
+	\label{fig:cpuload}
+\end{figure}
+
+\subsection{Degrees of Parallelism}
+
+\begin{figure}[hbpt]
+\graphicspath{{plots/}}
+\input{plots/paral.tex}
+	\caption{Parallelism experiment on the i5 platform. The plot shows
+	wall-clock execution time in ns., as a function of thread count.}
+	\label{fig:parallel-i5}
+\end{figure}
+
+\begin{figure}[hbpt]
+\graphicspath{{plots/}}
+\input{plots/paral-desktop.tex}
+	\caption{Parallelism experiment on the i7 platform. The plot shows
+	wall-clock execution time in ns., as a function of thread count.}
+	\label{fig:parallel-i7}
+\end{figure}
+
+\begin{figure}[hbpt]
+\graphicspath{{plots/}}
+\input{plots/paral-server.tex}
+	\caption{Parallelism experiment on the Xeon platform. The plot shows
+	wall-clock execution time in ns., as a function of thread count.}
+	\label{fig:parallel-xeon}
+\end{figure}
+
+\subsection{Memory Hierarchy Access-Times}
+
+\begin{figure}[hbpt]
+	\graphicspath{{plots/}}
+	\begin{subfigure}{1\textwidth}
+		\input{plots/readtimes.tex}
+	\end{subfigure}
+	\begin{subfigure}{1\textwidth}
+		\input{plots/readtimes2.tex}
+	\end{subfigure}
+	\begin{subfigure}{1\textwidth}
+		\input{plots/readtimes3.tex}
+	\end{subfigure}
+	\caption{Random cyclic reads, approximating memory-access times on all 3
+	platforms. The y-axes show the average time per read operation, measured
+	over $2^{25}$ reads. The x-axes show the working-set size in KiB.}
+	\label{fig:readtimes}
+\end{figure}
 
 \section{Multicore Cache Performance}
-\mynote{contents: (parallelisability plots here)}
-\mynote{contents: (readtimes plots here)}
-\mynote{I'm probably out of time, but if not, here are things to do: find
-problem in kmeans (and potentially qsort), implement simple dense-locking in
-other languages (C and C\# come to mind), try a different stress-pattern for
-hashmaps, make cyclic-buffer CAS experiment}
 
 To see the possible impact of false sharing, it is illustrative to look at a
 few contrived example programs. In this section we look at a handful of
@@ -45,8 +105,8 @@ increment, as a function of padding.
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
 \input{plots/barrier.tex}
-\caption{Uncontended increments on volatile integers. The plot shows nanoseconds
-	per increment, as a function of the number of bytes used as padding
+\caption{Uncontended increments on volatile integers. The plot shows wall-clock
+	execution time, as a function of the number of bytes used as padding
 	between the integers.}
 	\label{fig:uncont}
 \end{figure}
@@ -54,8 +114,8 @@ increment, as a function of padding.
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
 \input{plots/nobarrier.tex}
-\caption{Uncontended increments on non-volatile integers. The plot shows nanoseconds
-	per increment, as a function of the number of bytes used as padding
+\caption{Uncontended increments on non-volatile integers. The plot shows
+	wall-clock execution time, as a function of the number of bytes used as padding
 	between the integers.}
 \label{fig:uncont-nob}
 \end{figure}
@@ -114,7 +174,7 @@ and 1256.7$\pm$13.59 (laptop) ns)})
 		\caption{Xeon}
 	\end{subfigure}
 	\caption{Contended increments on \textbf{volatile} integers. The plots show
-	nanoseconds per increment, as a function of the number of threads.
+	nanoseconds per increment, as a function of the thread count.
 	Please note that both axes vary across the plots.}
 	\label{fig:cont}
 \end{figure}
@@ -159,8 +219,13 @@ programs will motivate our approach from coarse- to fine-grained synchronization
 with padding. One implementation also serves as an example of false sharing in
 lock-free CAS based applications. We then use Quicksort as an example of the
 divide and conquer paradigm, where the division of subproblems limit the need
-for synchronization. We take k-means clustering and a striped hashmap
-implementation as examples of locking and lock-striping applications.
+for synchronization.
+As examples of locking applications, we examine an implementation of k-means
+clustering, as suggested in the January 2017 exam in Practical Concurrent and
+Parallel Programming (PCPP) at the IT University of Copenhagen \cite{kmeansexam,
+kmeansexamcode}, as well as implementation of a concurrent hashmap datastructure
+used in the same coarse. Both of these applications are studied in
+\cite{mystery}, and can be said to have instigated this project.
 
 \subsection{Histogram builder}
 
@@ -184,6 +249,25 @@ input sequence consists of 4 million randomly chosen integers $a\in[0,31]$. The
 sequence is split between 4, 8, and 48 threads for the i5, i7, and Xeon platform
 respectively. The more threads, the less work per thread. 32 buckets are used,
 one for each possible number in the input.
+
+\subsubsection{Communication-free}
+\begin{figure}[hbtp]
+	\centering
+	\begin{tabular}{l r r}
+		\hline
+		\hline
+		Platform & Time (ms) & SD (\%) \\
+		\hline
+		\input{plots/histo-local-lockfree}
+		\hline
+		\hline
+	\end{tabular}
+	\caption{The histogram problem with no parallel communication. Time is
+	the total wall-clock execution time, the standard deviation (SD) is
+	given in percent of the execution time.}
+	\label{table:histo-lockfree}
+\end{figure}
+
 
 \subsubsection{Coarse-grained locking}
 The simplest solution is for the threads to take a single, shared lock anytime
@@ -215,15 +299,15 @@ solution to the histogram problem. At we would expect, it scales poorly with the
 	\begin{tabular}{l r r}
 		\hline
 		\hline
-		Platform & Time (ns) & SD (\%) \\
+		Platform & Time (ms) & SD (\%) \\
 		\hline
 		\input{plots/histo-lock-global}
 		\hline
 		\hline
 	\end{tabular}
 	\caption{The histogram problem using a single global lock. Time is per
-	input-element per thread, the standard deviation (SD) is given as a
-	percentage of the total execution time.}
+	input-element per thread, the standard deviation (SD) is given in
+	percentage of the execution time.}
 	\label{table:histo-global}
 \end{figure}
 
@@ -294,17 +378,39 @@ for the locks (I can't say where in the object header the actual lock is, if it
 is even in the object header). This should e noted somewhere, but probably not
 here, as it goes for most of the benchmarks.}
 
-\input{histo-plots.tex}
+\begin{figure}[hbtp]
+	\centering
+	\begin{tabular}{l r r r}
+		\hline
+		\hline
+		Platform & Time wo. padding (ms) & Best time (ms) & Improvement \\
+		\hline
+		i5 & 113.0 & 100.88 & 10.7\% \\
+		i7 & 71.88 & 59.9 & 16.9\% \\
+		Xeon & 420.8 & 118.62 & 71.8\% \\
+		\hline
+		\hline
+	\end{tabular}
+	\caption{Best times vs. times without padding for the fine-grained
+	histogram problem. Times are wall-clock execution times. Improvement is
+	given in percent of the unpadded execution time: An improvement of
+	71.8\% indicates that at least 71.8\% of the execution time is spend on
+	unnecessary coherence communication in the unpadded version.}
+	\label{table:hist-local}
+\end{figure}
 
 Figures \ref{fig:histo-local-i5}, \ref{fig:histo-local-i7}, and
-\ref{fig:histo-local-xeon} show the total execution times for the i5, i7, and
-Xeon platforms respectively. Each plot shows the execution time of the
-histogram problem, as a function of the amount of padding between the counters.
-The third axis -- the amount of padding between the locks -- is unrolled into
-different plots.
+\ref{fig:histo-local-xeon} show the wall-clock execution times using different
+amounts of padding for the i5, i7, and Xeon platforms respectively. Each smaller
+plot shows the execution time of the histogram problem, as a function of the
+amount of padding between the counters. The third axis -- the amount of padding
+between the locks -- is unrolled into different plots.
+
+The table in figure \ref{table:hist-local} compares the unpadded times with the
+best times for each platform.
 
 The effect is smallest on the i5 platform: Using 128 bytes padding between
-counters, and no padding between locks, yields a 10\% improvement on not using
+counters, and no padding between locks, yields a 10.7\% improvement on not using
 padding. Padding the locks does not seem to benefit performance, and even makes
 it worse in some cases.
 
@@ -316,8 +422,8 @@ The most significant effect is seen on the Xeon platform. Like on the i7
 platform, using padding is beneficial for both data structures, but here the
 benefit from padding the locks is much more pronounced. Using 128 bytes of
 padding for the counters and 112 bytes for the locks yields a 71.8\% improvement
-on not using padding, indicating that most of the time in the unpadded version
-is spent on cache coherence overhead.
+on not using padding, indicating that most of the time is spent on cache
+coherence overhead in the unpadded version.
 
 There is a noteworthy caveat: The experiment runs with 48 threads on the Xeon
 platform, but there are only 32 locks.
@@ -371,6 +477,8 @@ and there are equally many of them.
 this applies to. It is stated for the Sandy Bridge microarchitecture, and seems
 to apply to those that succeed it as well.}
 
+\input{histo-plots.tex}
+
 \subsubsection{Compare-and-swap}
 
 \mynote{Figures
@@ -379,25 +487,28 @@ to apply to those that succeed it as well.}
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
 \input{plots/histo-cas-i5.tex}
-\caption{CAS i5}
+\caption{The CAS histogram problem in the i5 platform. The plot shows the
+	wall-clock execution time in ns., as a function of padding in bytes.}
 \label{fig:histo-cas-i5}
 \end{figure}
 
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
 \input{plots/histo-cas-i7.tex}
-\caption{CAS i7}
+\caption{The CAS histogram problem in the i7 platform. The plot shows the
+	wall-clock execution time in ns., as a function of padding in bytes.}
 	\label{fig:histo-cas-i7}
 \end{figure}
 
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
 \input{plots/histo-cas-xeon.tex}
-\caption{CAS Xeon}
+\caption{The CAS histogram problem in the Xeon platform. The plot shows the
+	wall-clock execution time in ns., as a function of padding in bytes.}
 	\label{fig:histo-cas-xeon}
 \end{figure}
 
-\subsection{Divide and Conquer \mynote{avoidance? Quicksort}}
+\subsection{Quicksort}
 A famous example of a divide-and-conquer algorithm, quicksort recursively
 divides the sorting problem into independent subproblems, combining partial
 results into a solution for the whole problem. With respect to synchronization,
@@ -427,16 +538,111 @@ itself. Operations in
 recursive calls are guaranteed to be visible to the caller because of the
 call to \java{join()}.
 
+\begin{figure}[hbpt]
+\graphicspath{{plots/}}
+\input{plots/qsort.tex}
+	\caption{Quicksort on the i5 platform. The plot shows wall-clock execution time in
+	ns., as a function of padding in bytes.}
+	\label{fig:qsort-i5}
+\end{figure}
+
+\begin{figure}[hbpt]
+\graphicspath{{plots/}}
+\input{plots/qsort-desktop.tex}
+	\caption{Quicksort on the i7 platform. The plot shows wall-clock execution time in
+	ns., as a function of padding in bytes.}
+	\label{fig:qsort-i7}
+\end{figure}
+
+\begin{figure}[hbpt]
+\graphicspath{{plots/}}
+\input{plots/qsort-server.tex}
+	\caption{Quicksort on the Xeon platform. The plot shows wall-clock execution time in
+	ns., as a function of padding in bytes.}
+	\label{fig:qsort-xeon}
+\end{figure}
+
 \mynote{include concrete parameters: list size(s), cutoff details}
 
 \mynote{Analyze/conclude}
 
-\subsection{Locking \mynote{kmeans, striped hashmap}}
-As examples of locking applications, we examine an implementation of k-means
-clustering, as suggested in the January 2017 exam in Practical Concurrent and
-Parallel Programming (PCPP) at the IT University of Copenhagen \cite{kmeansexam,
-kmeansexamcode}, as well as implementation of a concurrent hashmap datastructure
-used in the same coarse. Both of these applications are studied in
-\cite{mystery}, and can be said to have instigated this project.
+\subsection{K-means}
 
-\mynote{subdivide eg. with subsubsections, and complete kmeans and explanations}
+\begin{figure}[hbtp]
+	\centering
+	\begin{tabular}{l r r}
+		\hline
+		\hline
+		Platform & Time (ms) & SD (\%) \\
+		\hline
+		\input{plots/peterskmeans-i5}
+		\hline
+		\hline
+	\end{tabular}
+	\caption{The k-means problem on the i5 platform, using 4 tasks. Time is
+	the total wall-clock execution time, the standard deviation (SD) is
+	given as the percentage of the execution time.}
+	\label{table:kmeans-i5}
+\end{figure}
+
+\begin{figure}[hbtp]
+	\centering
+	\begin{tabular}{l r r}
+		\hline
+		\hline
+		Platform & Time (ms) & SD (\%) \\
+		\hline
+		\input{plots/peterskmeans-i7}
+		\hline
+		\hline
+	\end{tabular}
+	\caption{The k-means problem on the i7 platform, using 8 tasks.  Time is
+	the total wall-clock execution time, the standard deviation (SD) is
+	given as the percentage of the execution time.}
+	\label{table:kmeans-i7}
+\end{figure}
+
+\begin{figure}[hbtp]
+	\centering
+	\begin{tabular}{l r r}
+		\hline
+		\hline
+		Platform & Time (ms) & SD (\%) \\
+		\hline
+		\input{plots/peterskmeans-xeon}
+		\hline
+		\hline
+	\end{tabular}
+	\caption{The k-means problem on the Xeon platform, using 48 tasks.
+	Time is the total wall-clock execution time, the standard deviation (SD)
+	is given as the percentage of the execution time.}
+	\label{table:kmeans-xeon}
+\end{figure}
+
+\subsection{Striped Hashmap}
+
+\begin{figure}[hbpt]
+\graphicspath{{plots/}}
+\input{plots/hashmap-striped-i5.tex}
+\caption{The striped hashmap problem on the i5 platform. The plot shows
+	wall-clock execution time in ns., as a function of padding in bytes.}
+\label{fig:hashmap-striped-i5}
+\end{figure}
+
+\begin{figure}[hbpt]
+\graphicspath{{plots/}}
+\input{plots/hashmap-striped-i7-xeon.tex}
+\caption{The striped hashmap problem on the i7 and Xeon platforms. The plot shows
+	wall-clock execution time in ns., as a function of padding in bytes.}
+\label{fig:hashmap-striped-i7}
+\end{figure}
+
+\subsection{Striped-write Hashmap}
+
+\begin{figure}[hbpt]
+\graphicspath{{plots/}}
+\input{plots/hashmap-stripedwrite.tex}
+\caption{The striped write-hashmap problem on all 3 platforms. The plot shows
+	wall-clock execution time in ns., as a function of padding in bytes.}
+\label{fig:hashmap-striped-xeon}
+\end{figure}
