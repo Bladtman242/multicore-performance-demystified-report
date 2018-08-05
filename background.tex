@@ -81,7 +81,16 @@ might speculate that the comparatively modest reductions are due to the small
 cache line size used in their simulations (4-16 bytes vs. 4-256 bytes in
 \cite{eggersReducing}, and 64 bytes in \cite{mystery}).
 
-In \citeyear{falsedef}, \citeauthor{falsedef} \cite{falsedef} consider a handful
+For the purposes of this report, false sharing is defined as unrelated data
+being placed the same cache-coherence block, or cache line, as explained in
+chapter \ref{chap:arch}. We gauge the impact of false sharing by hand-optimizing
+programs to avoid it, and benchmarking the programs with and without those
+optimizations. Measuring false sharing impact in this way will provide an
+approximation at best. Unsatisfied with imprecision, some authors have tried to
+bridge the gap between defining false sharing, and defining the impact of
+false-sharing:
+
+In \citeyear{falsedef}, \citeauthor{falsedef} \cite{falsedef} considered a handful
 of definitions of false sharing, and conclude that none of them are satisfying.
 They wish to find a definition that:
 
@@ -90,9 +99,9 @@ They wish to find a definition that:
 		corresponding to the cost savings attained by eliminating all
 		false sharing. Hence it never grows as data is split over
 		coherence blocks.
-	\item allows the properties of false sharing to be stated and proven as
+	\item Allows the properties of false sharing to be stated and proven as
 		mathematical theorems, and
-	\item is practically measurable for real programs.
+	\item Is practically measurable for real programs.
 \end{itemize}
 
 It seems unlikely that any definition of false sharing will satisfy their
@@ -117,9 +126,9 @@ of reducing false sharing, we do not consider it an optimization.
 
 The definition used in this report most closely resembles what
 \citeauthor{falsedef} calls "the hand tuning method", which they attribute to
-\citeauthor{eggersReducing} (referencing work not cited in this report). The
-is best described as hand-modifying programs to eliminate false sharing, and
-comparing the execution time with and without the modifications.
+\citeauthor{eggersReducing} (referencing work not cited in this report).
+
+\mynote{I haven't actually described bolosky and scotts methods yet}
 
 \footnotetext{In their definitions, the authors alternate between considering
 idealized hardware, avoiding false sharing by using small coherence-blocks, or
