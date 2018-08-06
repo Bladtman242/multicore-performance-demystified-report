@@ -289,8 +289,8 @@ plot '../accepted-results/x1/hashmap/hashmapsumstriped-personal' using 2:3:5:xti
 set output "hashmap-striped-i7-xeon.tex"
 set yrange [0:]
 
-plot '../accepted-results/itu-desktop/hashmap/hashmapsumstriped-desktop' using 2:3:5:xticlabels(2) with errorlines title "i7", \
-     '../accepted-results/itu-server/hashmap/hashmapsumstriped-server' using 2:3:5 with errorlines title "Xeon"
+plot '../accepted-results/itu-desktop/hashmap/hashmapsumstriped-desktop' using 2:3:5:xticlabels(2) linestyle 2 with errorlines title "i7", \
+     '../accepted-results/itu-server/hashmap/hashmapsumstriped-server' using 2:3:5 linestyle 3 with errorlines title "Xeon"
 
 set output "hashmap-stripedwrite.tex"
 set yrange [0:]

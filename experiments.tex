@@ -1,7 +1,7 @@
 \chapter{Experiments}
 \label{sec:experiments}
 
-\section{Preliminary Experiments}
+\section{Platform Experiments}
 
 \subsection{CPU Idle Load}
 \begin{figure}[hbpt]
@@ -25,6 +25,37 @@
 \end{figure}
 
 \subsection{Degrees of Parallelism}
+
+\begin{code}
+\begin{Verbatim}[frame=single]
+  let taskCount parallel tasks do {
+    final int startIndex = ...;
+      double sum = 0.0;
+      int k = startIndex;
+      for (int j=0; j < workPerThread; j++){
+        if(k<arraySize - 1){
+          ++k;
+        } else {
+          k=0;
+        }
+        sum += array[indices[k]];
+      }
+  }
+\end{Verbatim}
+	\caption{Simplified code for the memory-bound parallelism experiment.}
+\end{code}
+
+\begin{code}
+\begin{Verbatim}[frame=single]
+  let taskCount parallel tasks do {
+    double d = Double.MAX_VALUE;
+    for (long j = 0; j < workPerThread; ++j) {
+      d /= divisor;
+    }
+  }
+\end{Verbatim}
+	\caption{Simplified code for the CPU-bound parallelism experiment.}
+\end{code}
 
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
@@ -51,6 +82,18 @@
 \end{figure}
 
 \subsection{Memory Hierarchy Access-Times}
+\begin{code}
+\begin{Verbatim}[frame=single]
+  private static double jumps(int[] arr) {
+    int k = 0;
+    for(int j = 0; j < 1 << 25; ++j){
+      k = arr[k];
+    }
+    return k;
+  }
+\end{Verbatim}
+	\caption{Code for measuring memory access times.}
+\end{code}
 
 \begin{figure}[hbpt]
 	\graphicspath{{plots/}}
@@ -82,7 +125,18 @@ simple, uncontended, integer-field increment operations in parallel threads. To 
 the impact of false sharing, we observe the time it takes to perform an
 increment as a function of the distance between the fields in memory.
 
-\mynote{add code excerpt around here}
+\begin{code}
+\begin{Verbatim}[frame=single]
+  let taskCount parallel tasks do {
+    Counter cc = ...;
+    for (long i = 0; i < increments_per_thread; i++) {
+      cc.value++;
+    }
+  }
+\end{Verbatim}
+	\caption{Simplified code for the local-field version of the uncontended-writes
+	experiment.}
+\end{code}
 
 Each thread performs millions of increments. The fields are
 uncontended; each thread has its own integer-field and performs no read or write
@@ -131,7 +185,18 @@ operations to see the existence and cost of false sharing. In this section, we
 shall see that observing the performance of contended memory operations - where
 coherence overhead is strictly necessary - can be just as illustrative.
 
-\mynote{include code snippet}
+\begin{code}
+\begin{Verbatim}[frame=single]
+  int sharedInt = 0;
+  let taskCount parallel tasks do {
+    for (long j = 0; j < increments_per_thread; ++j) {
+      sharedInt++;
+    }
+  }
+\end{Verbatim}
+	\caption{Simplified code for the local-field version of the contended-writes
+	experiment.}
+\end{code}
 
 The program is similar to \mynote{reference uncontended snippet}, but in this
 version all threads operate on a single, shared integer field. As in the previous
@@ -251,6 +316,32 @@ respectively. The more threads, the less work per thread. 32 buckets are used,
 one for each possible number in the input.
 
 \subsubsection{Communication-free}
+\begin{code}
+\begin{Verbatim}[frame=single]
+  List<Counter[]> perThreadCounts = new ArrayList<>();
+  // Perform per-thread counts in parallel
+  let taskCount parallel tasks do {
+    final int from = ..., to = ...;
+    Counter[] counters = new Counter[WIDTH];
+    ... //initialize counters
+    perThreadCounts.add(counters);
+
+    for(int j = from; j < to; ++j) {
+      counters[inputSequence[j]].value++;
+    }
+    threads.add(t);
+  }
+  // Consolidate per-thread counts sequentially
+  Counter[] globalCounts = new Counter[WIDTH];
+  for(Counter[] localCounts : perThreadCounts) {
+    for(int i = 0; i < WIDTH; ++i){
+      globalCounts[i].value += localCounts[i].value;
+    }
+  }
+\end{Verbatim}
+	\caption{Simplified code for the communication-free version of the
+	histogram problem.}
+\end{code}
 \begin{figure}[hbtp]
 	\centering
 	\begin{tabular}{l r r}
@@ -354,6 +445,8 @@ experiment I use 32 locks: One lock for each bucket.
     }
   }
 \end{Verbatim}
+	\caption{Simplified code for the threads in the fine-grained locking
+	version of the histogram problem.}
 \end{code}
 
 The improved level of parallelism increases the possibility for false sharing: In
@@ -480,6 +573,19 @@ to apply to those that succeed it as well.}
 \input{histo-plots.tex}
 
 \subsubsection{Compare-and-swap}
+\begin{code}
+\begin{Verbatim}[frame=single]
+  private AtomicIntegerArray counters = ...;
+  let taskCount parallel tasks do {
+    final int from = ..., to = ...;
+    for(int j = from; j < to; ++j) {
+        counters.getAndIncrement(inputSequence[j]);
+    }
+  }
+\end{Verbatim}
+	\caption{Simplified code for the threads in the compare-and-swap 
+	version of the histogram problem.}
+\end{code}
 
 \mynote{Figures
 \ref{fig:histo-cas-i5},\ref{fig:histo-cas-i7},\ref{fig:histo-cas-xeon}}
@@ -519,6 +625,31 @@ Of coarse, we need to ensure that solutions are visible \textit{after} they are
 found, but no communication is needed while the threads work.
 
 \mynote{quicksort insert code snippet}
+\begin{code}
+\begin{Verbatim}[frame=single]
+  public class QuickSort extends RecursiveAction {
+    ...
+    protected void compute() {
+      if (hi-lo <= cutoff) {
+        SelectionSort.sort(array,lo,hi);
+        return;
+      }
+      int mid = partition();
+      ForkJoinTask<Void> leftTask =
+        new QuickSort(array, lo, mid, cutoff).fork();
+      QuickSort right =
+        new QuickSort(array, mid + 1, hi, cutoff);
+      right.compute();
+      leftTask.join();
+    }
+    ...
+  }
+\end{Verbatim}
+	\caption{Simplified code for the Quicksort problem. The left-out
+	\java{SelectionSort.sort} method implements sequential Selection sort.
+	The left-out \java{partition} method implements a median-of-three
+	version of Hoare partitioning.}
+\end{code}
 
 The program is a (somewhat naive) parallel implementation of quicksort. Anytime
 the algorithm divides the problem in two, the calling thread forks a task to
@@ -568,6 +699,49 @@ call to \java{join()}.
 
 \subsection{K-means}
 
+\begin{code}
+\begin{Verbatim}[frame=single]
+  while (!converged) {
+    // Assignment step: put each point in exactly one
+    // cluster
+    let taskCount parallel tasks do {
+      final int from = ..., to = ...;
+      for (int pi=from; pi<to; pi++) 
+        myCluster[pi] = closest(points[pi], clusters);
+    }
+    // Update step: recompute mean of each cluster
+    let taskCount parallel tasks do {
+      for (int pi=from; pi<to; pi++)
+        myCluster[pi].addToMean(points[pi]);
+    }
+    converged = true;
+    for (NormalCluster c : clusters)
+      converged &= c.computeNewMean();
+  }
+\end{Verbatim}
+	\caption{Simplified code for the original k-means implementation, KMeans2P.}
+\end{code}
+
+\begin{code}
+\begin{Verbatim}[frame=single]
+  while (!converged) {
+    // Assignment step: put each point in exactly one
+    // cluster
+    let taskCount parallel tasks do {
+      final int from = ..., to = ...;
+      for (int pi=from; pi<to; pi++)
+        closest(points[pi], clusters)
+          .addToMean(points[pi]);
+    }
+    // Update step: recompute mean of each cluster
+    converged = true;
+    for (Cluster c : clusters)
+      converged &= c.computeNewMean();
+  }
+
+\end{Verbatim}
+	\caption{Simplified code for the original k-means implementation, KMeans2P.}
+\end{code}
 \begin{figure}[hbtp]
 	\centering
 	\begin{tabular}{l r r}
@@ -620,6 +794,29 @@ call to \java{join()}.
 \end{figure}
 
 \subsection{Striped Hashmap}
+\begin{code}
+\begin{Verbatim}[frame=single]
+  public static class StripedMap<K,V> {
+    private volatile ItemNode<K,V>[] buckets;
+    private Object[] locks;
+    private final int[] sizes;
+    ...
+  }
+\end{Verbatim}
+	\caption{The most significant fields in the StripedMap class}
+\end{code}
+
+\begin{code}
+\begin{Verbatim}[frame=single]
+  public static class StripedWriteMap<K,V> {
+    private volatile ItemNode<K,V>[] buckets;
+    private Object[] locks;
+    private AtomicIntegerArray sizes;
+    ...
+  }
+\end{Verbatim}
+	\caption{The most significant fields in the StripedWriteMap class}
+\end{code}
 
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
