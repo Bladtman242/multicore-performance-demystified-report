@@ -174,9 +174,9 @@ set output "histo-cas-xeon.tex"
 plot '../accepted-results/itu-server/histograms/Histo-cas' using 2:3:5:xticlabels(2) with errorlines title "histogram-cas-xeon", \
 
 set key off
-set size 0.4,0.5
-set lmargin 2.6
-set rmargin 2.6
+set size 0.33,0.5
+set lmargin 0.7
+set rmargin 0.7
 
 set xtics 0,32,128 rotate by 45 right
 set mxtics 2
