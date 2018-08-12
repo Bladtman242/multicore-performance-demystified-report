@@ -76,11 +76,24 @@ storing the object pointers in the array. Additionally, there is the performance
 cost of an added indirect; as accessing the elements now requires reading the
 object pointer from the array, and \textit{then} reading the object.
 
-The guarantees provided by the Java memory model do not correspond directly to
-those we know from hardware either. Reading from a \java{volatile} field ensures
-the visibility of updates made by other threads \textit{before they wrote to the
-same field}. With what we know from \cite{mckenny-barriers}, it is not clear why
-threads reading a different \java{volatile} field do not get the same guarantee.
+The implementers of the Java Class Library seem to favour the undocumented
+\java{sun.misc.Unsafe} class for this kind of concurrency difficulty. With
+regard to whether the \java{Unsafe} class should be used, I will
+let the name of the class and the fact that it is an unpublished, undocumented part
+of the api speak for itself. For readers who are undeterred by such details,
+Doug Lea's implementations of the \java{AtomicInteger}\cite{atomicintegersrc},
+\java{AtomicIntegerArray}\cite{atomicinterarraysrc},
+\java{LongAdder}\cite{longaddersrc}, and \java{Striped64}\cite{striped64src}
+classes are well commented, highly illustrative, and well suited for learning
+about both the \java{Unsafe} class and design of multicore software software in
+general.
+
+Like the mechanisms provided to us, the guarantees provided by the Java memory
+model do not correspond directly to those we know from hardware either. Reading
+from a \java{volatile} field ensures the visibility of updates made by other
+threads \textit{before they wrote to the same field}. With what we know from
+\cite{mckenny-barriers}, it is not clear why threads reading a different
+\java{volatile} field do not get the same guarantee.
 
 Nonetheless, the remainder of this report will show that the hardware view taken
 in \cite{mckenny-barriers} is very useful when considering the multicore
@@ -465,16 +478,18 @@ one of them gets moved up to improve alignment.
 
 \begin{padding}[h]
 \begin{Verbatim}[frame=single]
-  ...
-  public class RegionA {
-    int a;
-    int b;
+  public class PaddedRegions
+    ...
+    public class RegionA {
+      protected int a;
+      protected int b;
+    }
+    ...
+    public class RegionB {
+      protected int c;
+    }
+    ...
   }
-  ...
-  public class RegionB {
-    int c;
-  }
-  ...
 \end{Verbatim}
 	\caption{}
 	\label{padding:object-inheritance}
@@ -495,13 +510,13 @@ result in code that is more readable than when using technique
 \begin{figure}[h]
 \begin{Verbatim}[frame=single, numbers=left]
 RegionA object internals:
- OFFSET  SIZE    TYPE DESCRIPTION
-      0     4         (object header)
-      4     4         (object header)
-      8     4         (object header)
-     12     4     int RegionA.a
-     16     4     int RegionA.b
-     20     4   Ptest RegionA.this$0
+ OFFSET  SIZE            TYPE DESCRIPTION
+      0     4                 (object header)
+      4     4                 (object header)
+      8     4                 (object header)
+     12     4             int RegionA.a
+     16     4             int RegionA.b
+     20     4   PaddedRegions RegionA.this$0
 Instance size: 24 bytes
 Space losses: 0 bytes internal + 0 bytes external = 0
 bytes total
@@ -509,12 +524,12 @@ bytes total
 ...
 
 RegionB object internals:
- OFFSET  SIZE    TYPE DESCRIPTION
-      0     4         (object header)
-      4     4         (object header)
-      8     4         (object header)
-     12     4     int RegionB.c
-     16     4   Ptest RegionB.this$0
+ OFFSET  SIZE            TYPE DESCRIPTION
+      0     4                 (object header)
+      4     4                 (object header)
+      8     4                 (object header)
+     12     4             int RegionB.c
+     16     4   PaddedRegions RegionB.this$0
      20     4         (loss due to the next object
 alignment)
 Instance size: 24 bytes
