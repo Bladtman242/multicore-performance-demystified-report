@@ -36,7 +36,7 @@ these may or may not have their own interesting multicore-performance
 characteristics, that we shall simply ignore.
 
 In this model, main memory is the slowest resource we work with. As we shall see
-in section \ref{sec:experiments}, reading from main memory takes on the
+in section \ref{chap:experiments}, reading from main memory takes on the
 order of 35-140 nanoseconds, whereas reading from L1 cache can be done in 1-4
 nanoseconds. It follows directly from this fact that the cache-friendliness of a
 program can significantly impact performance: If a program performs a billion
@@ -204,7 +204,7 @@ performance in programs with false sharing.
 
 \mynote{Continue writing: write-back caches (as described by drepper), MESI
 state states, store-buffers and invalidation queues (explanation of
-false-sharing impact)}
+false sharing impact)}
 \mynote{mention that the unit here is technically a "block". Cache line refers
 to a set/way pair, but cache-line and block are used interchangeably in
 literature}

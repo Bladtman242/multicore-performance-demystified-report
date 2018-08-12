@@ -40,7 +40,7 @@ Like the loop fusion optimization that introduced the problem in \cite{mystery},
 it may seem that we need to significantly change our parallel algorithms to
 avoid false sharing. However, it turns out that making simple transformations to
 the data layout can go a long way. In \cite{mystery}, adding padding around
-relevant variables significantly reduces the overhead.
+relevant fields significantly reduces the overhead.
 
 In \citeyear{eggersReducing}, \citeauthor{eggersReducing} used static analysis
 and compile-time code transformations to drastically reduce false sharing in a
@@ -88,7 +88,7 @@ programs to avoid it, and benchmarking the programs with and without those
 optimizations. Measuring false sharing impact in this way will provide an
 approximation at best. Unsatisfied with imprecision, some authors have tried to
 bridge the gap between defining false sharing, and defining the impact of
-false-sharing:
+false sharing:
 
 In \citeyear{falsedef}, \citeauthor{falsedef} \cite{falsedef} considered a handful
 of definitions of false sharing, and conclude that none of them are satisfying.

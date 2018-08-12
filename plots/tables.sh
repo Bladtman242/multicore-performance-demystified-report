@@ -12,40 +12,21 @@ cat <(awk "{printf \"i5 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../
     > histo-local-lockfree
 
 #Peter's kmeans
-cat <(awk "{printf \"p & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/x1/peterskmeans/peterskmeans-p-normalcluster-personal) \
-    <(awk "{printf \"q & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/x1/peterskmeans/peterskmeans-q-normalcluster-personal) \
-    <(awk "{printf \"q2 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/x1/peterskmeans/peterskmeans-q-paddedcluster-personal) \
-    <(awk "{printf \"q3 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/x1/peterskmeans/peterskmeans-q-paddedlargecluster-personal) \
+cat <(awk "{printf \"Kmeans2P & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/x1/peterskmeans/peterskmeans-p-normalcluster-personal) \
+    <(awk "{printf \"Kmeans2Q & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/x1/peterskmeans/peterskmeans-q-normalcluster-personal) \
+    <(awk "{printf \"Kmeans2Q64 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/x1/peterskmeans/peterskmeans-q-paddedcluster-personal) \
+    <(awk "{printf \"Kmeans2Q128 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/x1/peterskmeans/peterskmeans-q-paddedlargecluster-personal) \
     > peterskmeans-i5
 
-cat <(awk "{printf \"p & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-desktop/peterskmeans/peterskmeans-p-normalcluster-desktop) \
-    <(awk "{printf \"q & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-desktop/peterskmeans/peterskmeans-q-normalcluster-desktop) \
-    <(awk "{printf \"q2 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-desktop/peterskmeans/peterskmeans-q-paddedcluster-desktop) \
-    <(awk "{printf \"q3 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-desktop/peterskmeans/peterskmeans-q-paddedlargecluster-desktop) \
+cat <(awk "{printf \"Kmeans2P & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-desktop/peterskmeans/peterskmeans-p-normalcluster-desktop) \
+    <(awk "{printf \"Kmeans2Q & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-desktop/peterskmeans/peterskmeans-q-normalcluster-desktop) \
+    <(awk "{printf \"Kmeans2Q64 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-desktop/peterskmeans/peterskmeans-q-paddedcluster-desktop) \
+    <(awk "{printf \"Kmeans2Q128 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-desktop/peterskmeans/peterskmeans-q-paddedlargecluster-desktop) \
     > peterskmeans-i7
 
-cat <(awk "{printf \"p & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-server/peterskmeans/peterskmeans-p-normalcluster-server) \
-    <(awk "{printf \"q & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-server/peterskmeans/peterskmeans-q-normalcluster-server) \
-    <(awk "{printf \"q2 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-server/peterskmeans/peterskmeans-q-paddedcluster-server) \
-    <(awk "{printf \"q3 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-server/peterskmeans/peterskmeans-q-paddedlargecluster-server) \
+cat <(awk "{printf \"Kmeans2P & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-server/peterskmeans/peterskmeans-p-normalcluster-server) \
+    <(awk "{printf \"Kmeans2Q & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-server/peterskmeans/peterskmeans-q-normalcluster-server) \
+    <(awk "{printf \"Kmeans2Q64 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-server/peterskmeans/peterskmeans-q-paddedcluster-server) \
+    <(awk "{printf \"Kmeans2Q128 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-server/peterskmeans/peterskmeans-q-paddedlargecluster-server) \
     > peterskmeans-xeon
 
-#cat <(awk "{printf \"i5 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/x1/peterskmeans/peterskmeans-p-normalcluster-personal) \
-#    <(awk "{printf \"i7 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-desktop/peterskmeans/peterskmeans-p-normalcluster-desktop) \
-#    <(awk "{printf \"Xeon & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-server/peterskmeans/peterskmeans-p-normalcluster-server) \
-#    > peterskmeans-p
-#
-#cat <(awk "{printf \"i5 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/x1/peterskmeans/peterskmeans-q-normalcluster-personal) \
-#    <(awk "{printf \"i7 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-desktop/peterskmeans/peterskmeans-q-normalcluster-desktop) \
-#    <(awk "{printf \"Xeon & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-server/peterskmeans/peterskmeans-q-normalcluster-server) \
-#    > peterskmeans-q
-#
-#cat <(awk "{printf \"i5 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/x1/peterskmeans/peterskmeans-q-paddedcluster-personal) \
-#    <(awk "{printf \"i7 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-desktop/peterskmeans/peterskmeans-q-paddedcluster-desktop) \
-#    <(awk "{printf \"Xeon & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-server/peterskmeans/peterskmeans-q-paddedcluster-server) \
-#    > peterskmeans-q-padded
-#
-#cat <(awk "{printf \"i5 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/x1/peterskmeans/peterskmeans-q-paddedlargecluster-personal) \
-#    <(awk "{printf \"i7 & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-desktop/peterskmeans/peterskmeans-q-paddedlargecluster-desktop) \
-#    <(awk "{printf \"Xeon & %.2f & %.2f \\\\\\\ \n\", \$2/1E6, \$4/\$2 * 100}" ../accepted-results/itu-server/peterskmeans/peterskmeans-q-paddedlargecluster-server) \
-#    > peterskmeans-q-paddedlarge

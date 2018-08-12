@@ -1,9 +1,51 @@
 \chapter{Experiments}
-\label{sec:experiments}
+\label{chap:experiments}
 
-\section{Platform Experiments}
+In this chapter we look at multiple examples of multicore programs, focusing on
+how they are affected by false sharing of cache lines. We start with a few
+slightly contrived programs, to show the extremes of false sharing overhead. We
+then move on to more practical examples such as histogram building, sorting,
+and k-means clustering.
 
-\subsection{CPU Idle Load}
+Unless otherwise noted, experiments are run with 4, 8, and 48 threads on the i5,
+i7, and Xeon platforms, respectively.
+
+\section{Platform experiments}
+Before we get into our multicore performance experiments, it is worth verifying
+some assumptions about the hardware platforms we perform them on. In the
+following sections, we first assess noise in our experiments by examining the CPU
+load when not running experiments. We then gauge our platforms' effective or
+perceived level of parallelism, by measuring how well simple tasks scale with the
+number of threads used. We finally measure the access times of the different
+levels of the cache hierarchy.
+
+\subsection{CPU idle load}
+Our experiments do not run on bare metal: The underlying operating system and
+other user-applications may put load on the CPU, and skew our results.
+To assess the amplitude of this noise, we measure the CPU load on the platforms
+when not running experiments.
+The CPU load information is gathered from the Linux top utility on the
+i5 and i7 platforms, and from the Windows typeperf command on the Xeon
+platform.
+
+Values from both tools are sampled over 1-second intervals. The top
+utility gives integer values, while typeperf gives decimal values.
+
+The average values for the durations of the experiments are: 0.20\% for the i5
+platform, 0.02\% for the i7 platform, and 0.09\% for the Xeon platform.
+
+Figure \ref{fig:cpuload} shows the CPU load of all three platforms when no
+experiments are running.
+
+The values are given as percentages of a load that would keep all cores busy
+100\% of the time. Therefore, the Xeon platform is actually the busiest,
+despite not having the highest average. Expressing the loads as percentages of
+a load that would keep a single, virtual core busy, the loads are 0.79\%,
+0.16\%, and 4.14\% for the i5, i7, and Xeon platform respectively.
+
+For the performance effects we wish to examine in the remainder of this report,
+this level of noise seems to be acceptable.
+
 \begin{figure}[hbpt]
 	\graphicspath{{plots/}}
 	\begin{subfigure}{1\textwidth}
@@ -20,11 +62,12 @@
 	\end{subfigure}
 	\caption{CPU baselines for benchmarks. The x-axes show CPU load in
 	percent, as reported by the operating system (100\% load corresponds to
-	all cores being busy 100\% of the time). The y-axes show time in minutes.}
+	all cores being busy 100\% of the time). The y-axes show time in
+	minutes. Please note that both axes differ between the plots.}
 	\label{fig:cpuload}
 \end{figure}
 
-\subsection{Degrees of Parallelism}
+\subsection{Degrees of parallelism}
 
 \begin{code}
 \begin{Verbatim}[frame=single]
@@ -81,7 +124,7 @@
 	\label{fig:parallel-xeon}
 \end{figure}
 
-\subsection{Memory Hierarchy Access-Times}
+\subsection{Memory hierarchy access-times}
 \begin{code}
 \begin{Verbatim}[frame=single]
   private static double jumps(int[] arr) {
@@ -112,14 +155,14 @@
 	\label{fig:readtimes}
 \end{figure}
 
-\section{Multicore Cache Performance}
+\section{Multicore cache performance}
 
 To see the possible impact of false sharing, it is illustrative to look at a
 few contrived example programs. In this section we look at a handful of
 variations of programs that perform simple operations in a multicore
 setting.
 
-\subsection{Uncontended Writes}
+\subsection{Uncontended writes}
 The first example we examine illustrates the impact of false sharing by running
 simple, uncontended, integer-field increment operations in parallel threads. To see
 the impact of false sharing, we observe the time it takes to perform an
@@ -149,10 +192,7 @@ Since the fiends are uncontended, we will assume the difference in performance
 to be a result of unnecessary coherence operations due to false sharing.
 
 In the experiments with volatile integers, each thread performs 6M increments.
-In the experiments without volatile, each thread performs 66M increments. The
-experiments are run with 4, 8, and 48 threads on the i5, i7, and Xeon platforms,
-respectively.
-
+In the experiments without volatile, each thread performs 66M increments. 
 Figure \ref{fig:uncont} and \ref{fig:uncont-nob} show the average time per
 increment, as a function of padding.
 
@@ -178,7 +218,7 @@ increment, as a function of padding.
 barrier/no-barrier), include values of plots (plots are hard to read), and
 reflect/conclude}
 
-\subsection{Contended Writes}
+\subsection{Contended writes}
 
 In the previous section we examined the performance of uncontended memory
 operations to see the existence and cost of false sharing. In this section, we
@@ -273,30 +313,30 @@ illustrativt), indikerer (løst) pris af at smide en cache-line frem og tilbage
 mellem kerner}
 
 
-\section{Practical Applications}
+\section{Practical applications}
 While incrementing counters is useful, it is thankfully not the only thing we
 build software for.
-In this section we examine false sharing in 4 \mynote{Update if it doesn't
-end up 4} examples of more complicated parallel programs.
+In this section we examine false sharing in 4 examples of more complicated
+parallel programs.
 
 First we will look at several programs that build histograms. These example
 programs will motivate our approach from coarse- to fine-grained synchronization
 with padding. One implementation also serves as an example of false sharing in
-lock-free CAS based applications. We then use Quicksort as an example of the
+lock-free compare-and-swap based applications. We then use Quicksort as an example of the
 divide and conquer paradigm, where the division of subproblems limit the need
 for synchronization.
 As examples of locking applications, we examine an implementation of k-means
 clustering, as suggested in the January 2017 exam in Practical Concurrent and
 Parallel Programming (PCPP) at the IT University of Copenhagen \cite{kmeansexam,
-kmeansexamcode}, as well as implementation of a concurrent hashmap datastructure
-used in the same coarse. Both of these applications are studied in
+kmeansexamcode}, as well as two implementations of a concurrent hashmap data structure
+used in the same course. Both of these applications are studied in
 \cite{mystery}, and can be said to have instigated this project.
 
 \subsection{Histogram builder}
 
 Let us consider the problem of building a histogram: Given a sequence of
 integers as input, we wish to build a data structure that maps numbers to their
-frequencies in the input sequence:
+frequencies in the input sequence.
 
 A simple parallel algorithm for building a histogram presents itself: Divide the
 sequence into a number of equal-sized sections, one for each thread. For each
@@ -309,27 +349,35 @@ ensure atomicity because the numbers in the input sequence may appear multiple
 times, and in different segments, making it possible for more than a single
 thread to increment the same frequency counter at the same time.
 
-The histogram benchmarks are performed with the following parameters: The full
-input sequence consists of 4 million randomly chosen integers $a\in[0,31]$. The
-sequence is split between 4, 8, and 48 threads for the i5, i7, and Xeon platform
-respectively. The more threads, the less work per thread. 32 buckets are used,
-one for each possible number in the input.
+The histogram benchmarks are performed with the following parameters: An input
+sequence which consists of 4 million randomly chosen integers $a\in[0,31]$, and
+is divided evenly between threads. The more threads, the less work per thread.
+We use 32 buckets: One for each possible number in the input. We will refer to
+the number of buckets as the "width" of the histogram.
 
 \subsubsection{Communication-free}
+As a baseline for the multicore performance of the histogram problem, we examine
+an implementation with minimal communication overhead. The strategy employed can
+be thought of as a kind of avoidance: We arrange it so that part of the problem
+can be solved in parallel, \textit{without ongoing communication between cores}.
+After the parallel step, a single thread consolidates the thread-local
+results produced by each thread. The only necessary communication or
+synchronization is making the thread-local results visible to the thread that
+executes the consolidation step, \textit{after} the parallel step is completed. Code snippet
+\ref{code:histo-lockfree} outlines the implementation of this approach.
+
 \begin{code}
 \begin{Verbatim}[frame=single]
-  List<Counter[]> perThreadCounts = new ArrayList<>();
-  // Perform per-thread counts in parallel
+  List<Counter[]> perThreadCounts = ...;
+  // Perform thread-local counts in parallel
   let taskCount parallel tasks do {
+    // Thread-local counter array. A reference to the
+    // same array is stored in perThreadCounts
+    Counter[] counters = ...;
     final int from = ..., to = ...;
-    Counter[] counters = new Counter[WIDTH];
-    ... //initialize counters
-    perThreadCounts.add(counters);
-
     for(int j = from; j < to; ++j) {
       counters[inputSequence[j]].value++;
     }
-    threads.add(t);
   }
   // Consolidate per-thread counts sequentially
   Counter[] globalCounts = new Counter[WIDTH];
@@ -340,8 +388,10 @@ one for each possible number in the input.
   }
 \end{Verbatim}
 	\caption{Simplified code for the communication-free version of the
-	histogram problem.}
+	histogram builder.}
+	\label{code:histo-lockfree}
 \end{code}
+
 \begin{figure}[hbtp]
 	\centering
 	\begin{tabular}{l r r}
@@ -353,18 +403,19 @@ one for each possible number in the input.
 		\hline
 		\hline
 	\end{tabular}
-	\caption{The histogram problem with no parallel communication. Time is
-	the total wall-clock execution time, the standard deviation (SD) is
-	given in percent of the execution time.}
-	\label{table:histo-lockfree}
+	\caption{Execution times for the communication-free histogram builder. Time
+is the total wall-clock execution time, the standard deviation (SD) is given in
+percent of the execution time.} \label{table:histo-lockfree}
 \end{figure}
 
+As we will see, this is by far the fastest of our solutions to the histogram. It
+also scales relatively well with the number of cores.
 
 \subsubsection{Coarse-grained locking}
-The simplest solution is for the threads to take a single, shared lock anytime
-they increment a frequency counter. This solution is slow. Only reading
-from the input sequence is parallelised. At any time,
-only one thread can be incrementing a counter.
+When it comes to locking implementations, the simplest solution is for the
+threads to take a single, shared lock anytime they increment a frequency
+counter. This solution is slow. Only reading from the input sequence is
+parallelised. At any time, only one thread can be incrementing a counter.
 
 \begin{code}
 \begin{Verbatim}[frame=single]
@@ -379,7 +430,7 @@ only one thread can be incrementing a counter.
   }
 \end{Verbatim}
 	\caption{Simplified code for the threads in the coarse-grained locking
-	version of the histogram problem.}
+	version of the histogram builder.}
 \end{code}
 
 The table in figure \ref{table:histo-global} shows the execution times of this
@@ -396,9 +447,9 @@ solution to the histogram problem. At we would expect, it scales poorly with the
 		\hline
 		\hline
 	\end{tabular}
-	\caption{The histogram problem using a single global lock. Time is per
-	input-element per thread, the standard deviation (SD) is given in
-	percentage of the execution time.}
+	\caption{Execution times for the histogram builder using a single
+global lock. Time is per input-element per thread, the standard deviation (SD)
+is given in percentage of the execution time.}
 	\label{table:histo-global}
 \end{figure}
 
@@ -426,6 +477,7 @@ Except for updates to the counter the thread is \textit{trying} to increment,
 this is unnecessary.
 
 \subsubsection{Fine-grained locking}
+\label{sec:fine-grained-histo}
 A better solution is to have different counters guarded by different locks. This
 way, threads can perform all their work in parallel, except when different
 threads work on counters guarded by the same lock. For practical applications
@@ -446,7 +498,7 @@ experiment I use 32 locks: One lock for each bucket.
   }
 \end{Verbatim}
 	\caption{Simplified code for the threads in the fine-grained locking
-	version of the histogram problem.}
+	version of the histogram builder.}
 \end{code}
 
 The improved level of parallelism increases the possibility for false sharing: In
@@ -457,10 +509,10 @@ of time invalidating each other's cache lines without doing any actual work.
 There are two clear candidates for false sharing: The locks and the counters.
 Neither are stored directly in the arrays: Locks must be object types, and are
 hence stored as references, and the integers used for the counters are stored in
-placeholder objects so we can declare them as \java{volatile}. False sharing
-of the actual array elements should therefore be irrelevant, but if the objects
-are densely allocated, e.g. in a tight for-loop, they can still be placed
-back-to-back in memory.
+placeholder objects so we can declare them as \java{volatile}. False sharing of
+the references stored in the arrays should therefore be irrelevant, but if the
+objects are densely allocated, e.g. in a tight for-loop, they can still be
+placed back-to-back in memory.
 
 We measure the impact of false sharing by benchmarking versions with different
 amounts of padding between the locks and counters.
@@ -485,7 +537,7 @@ here, as it goes for most of the benchmarks.}
 		\hline
 	\end{tabular}
 	\caption{Best times vs. times without padding for the fine-grained
-	histogram problem. Times are wall-clock execution times. Improvement is
+	histogram builder. Times are wall-clock execution times. Improvement is
 	given in percent of the unpadded execution time: An improvement of
 	71.8\% indicates that at least 71.8\% of the execution time is spend on
 	unnecessary coherence communication in the unpadded version.}
@@ -495,7 +547,7 @@ here, as it goes for most of the benchmarks.}
 Figures \ref{fig:histo-local-i5}, \ref{fig:histo-local-i7}, and
 \ref{fig:histo-local-xeon} show the wall-clock execution times using different
 amounts of padding for the i5, i7, and Xeon platforms respectively. Each smaller
-plot shows the execution time of the histogram problem, as a function of the
+plot shows the execution time of the histogram builder, as a function of the
 amount of padding between the counters. The third axis -- the amount of padding
 between the locks -- is unrolled into different plots.
 
@@ -545,14 +597,14 @@ We would expect the performance to stop improving abruptly around 64
 bytes, as that is the cache line size used by our hardware architectures.
 One explanation for the continued improvements is the cache prefetch mechanism.
 It is possible that the prefetch mechanism causes more than a single cache line
-to be fetched. This is the explanation given for why the \java{@contended}
-annotation causes 128 bytes of padding to inserted on openjdk, under the
+to be fetched. This is the explanation given for why the \java{@Contended}
+annotation causes 128 bytes of padding to inserted on OpenJDK, under the
 assumption that cache lines are half that size\cite{openjdkmailcontended}.
 This explanation is in agreement with the Intel optimization
 manual\cite{inteloptimize}, which states that the spatial prefetcher
 "strives to complete every cache line fetched to the L2 cache with the pair line
 that completes it to a 128-byte aligned chunk"\footnotemark. While this
-prefetching does not incur a false-sharing overhead, it will leave an additional
+prefetching does not incur a false sharing overhead, it will leave an additional
 cache line in the CPU's cache. Another CPU might then later write to that
 cache line, incurring unnecessary coherence overhead. The additional padding
 does not prevent the prefetcher from loading the irrelevant cache line, but it
@@ -573,6 +625,19 @@ to apply to those that succeed it as well.}
 \input{histo-plots.tex}
 
 \subsubsection{Compare-and-swap}
+Following the same strategy as the fine-grained locking version implementation
+above, we can use optimistic concurrency to implement a lock-free version of
+the histogram.
+
+Optimistic compare-and-swap works best when the operation we perform is cheap,
+and the resource we perform it on has low contended. That way, retries will
+happen rarely, and be cheap when they do.
+
+The histogram problem lends itself well to a compare-and-swap based solution:
+All writes to shared data are the results of simple increment operations, which
+are fast. Resource contention depends on the ratio of locks to threads, and the
+order of the input.
+
 \begin{code}
 \begin{Verbatim}[frame=single]
   private AtomicIntegerArray counters = ...;
@@ -584,16 +649,62 @@ to apply to those that succeed it as well.}
   }
 \end{Verbatim}
 	\caption{Simplified code for the threads in the compare-and-swap 
-	version of the histogram problem.}
+	version of the histogram builder.}
+	\label{code:histo-cas}
 \end{code}
 
-\mynote{Figures
-\ref{fig:histo-cas-i5},\ref{fig:histo-cas-i7},\ref{fig:histo-cas-xeon}}
+Code snippet \ref{code:histo-cas} outlines the compare-and-swap implementation
+of the histogram builder. It uses Java's \java{AtomicIntegerArray} class to
+hold counters. The \java{getAndIncrement} method performs the compare-and-swap
+operation, and guarantees that updates are visible.
+
+Reading the source code for the OpenJDK implementation of the
+\java{AtomicIntegerArray} class \cite{atomicinterarraysrc} reveals that
+the integers are stored in a plain \java{int} array.
+To ensure atomicity and visibility of updates, the implementation relies on the
+undocumented \java{sun.misc.Unsafe} class. This strongly suggests that our
+implementation suffers from false sharing of cache lines, as the array elements
+appear to be unpadded.
+
+Figures \ref{fig:histo-cas-i5}, \ref{fig:histo-cas-i7}, and
+\ref{fig:histo-cas-xeon} show that the execution time of this version of the
+histogram builder improves drastically when we introduce padding between the
+counters, confirming our suspicions that the \java{AtomicIntegerArray} class,
+and therefore our histogram builder, suffers from false sharing.
+
+\begin{figure}[hbtp]
+	\centering
+	\begin{tabular}{l r r}
+		\hline
+		\hline
+		Platform & Best time (ms) & Padding (bytes)\\
+		\hline
+		i5 & 60.62 & 48 \\
+		i7 & 25.26 & 128 \\
+		Xeon & 48.62 & 128 \\
+		\hline
+		\hline
+	\end{tabular}
+	\caption{The best execution times for the compare-and-swap histogram
+	builder, and the amounts of padding used to achieve them. Times
+	are wall-clock execution times.}
+	\label{table:histo-cas}
+\end{figure}
+
+The best execution times, shown in figure \ref{table:histo-cas}, are 
+better than those of the fine-grained locking implementation by factors of 1.9,
+2.8, and 8.7 for the i5, i7, and Xeon platforms respectively. However, the
+communication-free implementation is still 3.3, 3.3, and 9.7 times faster than
+the compare-and-swap version.
+
+The lesson here is that data-sharing between cores should be avoided
+entirely when doing so is easy. And when it cannot easily be avoided, we
+should at least avoid unnecessary communication caused by false sharing.
 
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
 \input{plots/histo-cas-i5.tex}
-\caption{The CAS histogram problem in the i5 platform. The plot shows the
+\caption{Execution times for the compare-and-swap based histogram builder on the i5 platform. The plot shows the
 	wall-clock execution time in ns., as a function of padding in bytes.}
 \label{fig:histo-cas-i5}
 \end{figure}
@@ -601,7 +712,7 @@ to apply to those that succeed it as well.}
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
 \input{plots/histo-cas-i7.tex}
-\caption{The CAS histogram problem in the i7 platform. The plot shows the
+\caption{Execution times for the compare-and-swap based histogram builder on the i7 platform. The plot shows the
 	wall-clock execution time in ns., as a function of padding in bytes.}
 	\label{fig:histo-cas-i7}
 \end{figure}
@@ -609,22 +720,23 @@ to apply to those that succeed it as well.}
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
 \input{plots/histo-cas-xeon.tex}
-\caption{The CAS histogram problem in the Xeon platform. The plot shows the
+\caption{Execution times for the compare-and-swap based histogram builder on the Xeon platform. The plot shows the
 	wall-clock execution time in ns., as a function of padding in bytes.}
 	\label{fig:histo-cas-xeon}
 \end{figure}
 
 \subsection{Quicksort}
-A famous example of a divide-and-conquer algorithm, quicksort recursively
+A famous example of a divide-and-conquer algorithm, Quicksort recursively
 divides the sorting problem into independent subproblems, combining partial
-results into a solution for the whole problem. With respect to synchronization,
-we can see this problem division as a kind of avoidance: If the sub-problems are
-independent, they can be solved in parallel on a multicore system without any
-communication - and therefore synchronization - between parallel processes.
-Of coarse, we need to ensure that solutions are visible \textit{after} they are
-found, but no communication is needed while the threads work.
+results into a solution for the whole problem. We can see this problem division
+as the same kind of avoidance we saw in the communication-free histogram
+example: If the sub-problems are independent, they can be solved in parallel on
+a multicore system without any communication between parallel processes. Of
+course, we need to ensure that solutions are visible \textit{after} they are
+found, but no communication is needed while the threads work. This is the only
+of our experiments whare eliminating false sharing does not significantly
+improve execution times.
 
-\mynote{quicksort insert code snippet}
 \begin{code}
 \begin{Verbatim}[frame=single]
   public class QuickSort extends RecursiveAction {
@@ -649,15 +761,19 @@ found, but no communication is needed while the threads work.
 	\java{SelectionSort.sort} method implements sequential Selection sort.
 	The left-out \java{partition} method implements a median-of-three
 	version of Hoare partitioning.}
+	\label{code:qsort}
 \end{code}
 
-The program is a (somewhat naive) parallel implementation of quicksort. Anytime
-the algorithm divides the problem in two, the calling thread forks a task to
-solve the left part of the problem, executing the right part itself. Forked
-tasks are run in parallel at the discretion of the Java \java{ForkJoinPool}.
+The experiments use a (somewhat naive) parallel implementation of quicksort,
+outlined in code snippet \ref{code:qsort}.
+Anytime the algorithm divides the problem in two, the calling thread forks a
+task to solve the left part of the problem, executing the right part itself.
+In this experiment we do not directly control the number of threads used on each
+platform: Forked tasks are run in parallel at the discretion of the
+\java{ForkJoinPool}.
 
 As is common, and as is recommended in the popular algorithms text book by
-\citet{sedgewick}, the implementation uses a cutoff to a sequential selection
+\citet{sedgewick}, the implementation uses a cutoff to a sequential Selection
 sort. An experiment is included to find a good value for the cutoff.
 
 There is no step to combine the results of two subproblems, as calls operate
@@ -665,15 +781,15 @@ in-place on the same shared array. While this may \textit{seem} like communicati
 between threads, there is only a single thread operating on a given
 array-segment at any time. The only relevant communication is that of the
 constructor parameters to the recursive calls, and the reference to the array
-itself. Operations in
-recursive calls are guaranteed to be visible to the caller because of the
-call to \java{join()}.
+itself. Operations in recursive calls are guaranteed to be visible to the caller
+because of the call to \java{join()}.
 
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
 \input{plots/qsort.tex}
 	\caption{Quicksort on the i5 platform. The plot shows wall-clock execution time in
-	ns., as a function of padding in bytes.}
+	ns., as a function of padding in bytes. For the padnone experiment, the
+	x-axis indicates the cutoff value in bytes.}
 	\label{fig:qsort-i5}
 \end{figure}
 
@@ -681,7 +797,8 @@ call to \java{join()}.
 \graphicspath{{plots/}}
 \input{plots/qsort-desktop.tex}
 	\caption{Quicksort on the i7 platform. The plot shows wall-clock execution time in
-	ns., as a function of padding in bytes.}
+	ns., as a function of padding in bytes. For the padnone experiment, the
+	x-axis indicates the cutoff value in bytes.}
 	\label{fig:qsort-i7}
 \end{figure}
 
@@ -689,15 +806,84 @@ call to \java{join()}.
 \graphicspath{{plots/}}
 \input{plots/qsort-server.tex}
 	\caption{Quicksort on the Xeon platform. The plot shows wall-clock execution time in
-	ns., as a function of padding in bytes.}
+	ns., as a function of padding in bytes. For the padnone experiment, the
+	x-axis indicates the cutoff value in bytes.}
 	\label{fig:qsort-xeon}
 \end{figure}
 
-\mynote{include concrete parameters: list size(s), cutoff details}
+There is a risk of false-sharing every time the algorithm subdivides the input
+array: The rightmost elements of the left part may share a cache line with the
+leftmost elements of the right part. We run three experiments on each platform:
+\begin{description}
+	\item[padnone] With no padding, used to determine a good value for the cutoff.
+	\item[padall] Where padding is added between all elements in the input
+		array.
+	\item[padsome] Where padding is added between some elements in the input
+		array, such that padding segments and data segments are of equal
+		length.
+\end{description}
 
-\mynote{Analyze/conclude}
+Experiments are run using an array with 4 million integers to be sorted. Padall
+and padsome experiments use a cutoff value of 16 array elements, corresponding
+to 64 bytes. Figures \ref{fig:qsort-i5}, \ref{fig:qsort-i7},
+\ref{fig:qsort-xeon} show the execution times of the experiments. The results
+show that adding padding between all array elements vastly increases execution
+time, while adding padding between just some elements decrease execution time by
+0-1.8\%
+
+There are a few reasons why false sharing might not introduce significant
+communication overhead to the Quicksort implementation: At most one cache line 
+can be falsely shared at each problem division. This means each task
+accesses at most 2 cache-lines that are falsely shared with other threads. An
+additional two cache lines per task may be subject
+to false invalidations due to the L2 prefetcher, as explained in
+section \ref{sec:fine-grained-histo}. Each task writes to each of their array
+elements at most once, either in the partitioning step, or when performing
+Selection sort, so the shared cache lines suffer little contention, if any.
+Finally, nothing guarantees visibility of updates before a task has finished, so
+we do not suffer the full overhead of the cache coherence protocol.
+
+The fact that we see slight improvement from padding in the padsome experiments
+might simply be noise, but it leads us to a new question. The experiments are
+all but guaranteed to have useless padding. That is, padding between elements
+that are always in the same subdivisions. With Quicksort, we cannot predict
+where the array will be divided beforehand, but perhaps other divide-and-conquer
+algorithms, such as Mergesort, could benefit more from eliminating false
+sharing, simply because we could add padding only in positions where the input
+array gets split.
 
 \subsection{K-means}
+The K-means problem from the 2017 PCPP exam -- the original inspiration for
+\textit{A multicore performance mystery solved}\cite{mystery} and this report --
+is another example of a locking application which suffers from false sharing.
+
+The k-means clustering algorithm takes as input: A list of points to be
+clustered, and a list of $k$ initial cluster means. The algorithm then
+assigns each point to its nearest cluster, and updates the clusters'
+means according to the new assignments. This process is repeated iteratively
+until cluster means have stabilised.
+
+All our k-means experiments are run with 200.000 points and 81 clusters, and
+take 108 iterations to complete.
+
+\begin{code}
+\begin{Verbatim}[frame=single]
+  public static class Cluster implements Cluster{
+    private volatile Point mean;
+    private double sumx, sumy;
+    private int count;
+    public synchronized void addToMean(Point p) {
+      sumx += p.x;
+      sumy += p.y;
+      count++;
+    }
+    public synchronized boolean computeNewMean() {
+      ...
+    }
+\end{Verbatim}
+	\caption{Simplified code for the k-means \java{Cluster} class}
+	\label{code:cluster}
+\end{code}
 
 \begin{code}
 \begin{Verbatim}[frame=single]
@@ -720,6 +906,7 @@ call to \java{join()}.
   }
 \end{Verbatim}
 	\caption{Simplified code for the original k-means implementation, KMeans2P.}
+	\label{code:kmeans2p}
 \end{code}
 
 \begin{code}
@@ -740,14 +927,71 @@ call to \java{join()}.
   }
 
 \end{Verbatim}
-	\caption{Simplified code for the original k-means implementation, KMeans2P.}
+	\caption{Simplified code for the optimized k-means implementation, KMeans2Q.}
+	\label{code:kmeans2q}
 \end{code}
+
+The code used for this experiment is the same as in \cite{mystery}, with small
+adaptations. We examine 4 K-means implementations:
+
+\begin{description}
+	\item[KMeans2P] {The unoptimized implementation described
+		in\cite{mystery} and outlined in code snippet
+		\ref{code:kmeans2p}.}
+	\item[KMeans2Q] {The optimized implementation described in \cite{mystery}
+		and outlined in  code snippet \ref{code:kmeans2q}.}
+	\item[KMeans2Q64] {The same as KMeans2Q, but with a \java{Cluster} class
+		with two 64-byte padding segments.}
+	\item[KMeans2Q128] {The same as KMeans2Q, but with a \java{Cluster} class
+		with two 128-byte padding segments.}
+\end{description}
+
+The most significant false sharing overhead comes from the \java{sumx},
+\java{sumy}, \java{count}, and \java{mean} fields in the \java{Cluster}
+class (Hereinafter, we shall refer to these the former three of these fields as
+the \textit{assignment fields}). To see the problem, we need to understand just
+3 points:
+
+\begin{enumerate}
+	\item{Updates to the assignment and \java{mean} fields
+		are guarded by a lock (the surrounding \java{Cluster} instance),
+		and the \java{mean} field is declared \java{volatile}}. This
+		means that the fields are subject to the cache coherence
+		protocol: Writes to these fields will result in invalidation
+		messages being sent to the other cores. Reads from \java{mean}
+		will force the CPU core to process pending invalidations, which
+		may result in later cache misses.
+	\item {The \java{mean} fields might be in the same cache line as the
+		assignment fields. The fields consist of an object pointer, two
+		\java{doubles} and an \java{int}, taking up a total of 28
+		bytes. The small memory footprint even makes it possible for
+		two separate \java{Cluster} instances to have fields in the same
+		cache line!}
+	\item {Every call to the \java{closest} method reads the \java{mean}
+		fields of \textit{every cluster}. Calls to the \java{closest}
+		and \java{addToMean} methods are interleaved in KMeans2Q, which
+		means writes to the assignment fields happen concurrently with
+		reads from the \java{volatile mean} field.}
+\end{enumerate}
+
+This means that every write to the assignment fields runs the risk of causing
+false cache misses on all other CPU cores, if the assignment fields falsely
+share the cache lines of \java{mean} fields.
+
+The padded versions of KMeans2Q arrange the fields so that the assignment fields
+are together in a contiguous memory segment, with padding both before and after
+that segment. That should guarantee that the \java{mean} field is never in the
+same cache line as the three other fields. No padding is added between the
+\java{sumx}, \java{sumy}, and \java{count} fields. These three fields are always
+updated together, so we welcome the possibility of them being placed in the
+same cache line.
+
 \begin{figure}[hbtp]
 	\centering
 	\begin{tabular}{l r r}
 		\hline
 		\hline
-		Platform & Time (ms) & SD (\%) \\
+		K-means version & Time (ms) & SD (\%) \\
 		\hline
 		\input{plots/peterskmeans-i5}
 		\hline
@@ -764,7 +1008,7 @@ call to \java{join()}.
 	\begin{tabular}{l r r}
 		\hline
 		\hline
-		Platform & Time (ms) & SD (\%) \\
+		K-means version & Time (ms) & SD (\%) \\
 		\hline
 		\input{plots/peterskmeans-i7}
 		\hline
@@ -781,7 +1025,7 @@ call to \java{join()}.
 	\begin{tabular}{l r r}
 		\hline
 		\hline
-		Platform & Time (ms) & SD (\%) \\
+		K-means version & Time (ms) & SD (\%) \\
 		\hline
 		\input{plots/peterskmeans-xeon}
 		\hline
@@ -793,7 +1037,64 @@ call to \java{join()}.
 	\label{table:kmeans-xeon}
 \end{figure}
 
-\subsection{Striped Hashmap}
+The results, shown in figures \ref{table:kmeans-i5}, \ref{table:kmeans-i7}, and
+\ref{table:kmeans-xeon}, show that false sharing has a significant effect on our 
+k-means implementations. Particularly on the Xeon platform, where the KMeans2Q128
+is 2.1 times faster than KMeans2Q. Curiously, the execution time doesn't get as
+close to that of KMeans2P as in \citeauthor{mystery}'s experiments, even though
+both experiments use two 128-byte padding segments in the \java{Cluster} class.
+
+\subsection{Striped hashmap}
+Another problem used in the PCPP course, concurrent hashmap data structures
+provide a more interesting example of striped locking applications than the
+histogram builder we examined earlier: Hashmaps serve as general key-value
+stores, their sizes may change dynamically, and unlike histograms, reads
+and writes to hashmaps are often interleaved.
+
+We consider two versions of the striped hashmap: Striped map, and striped-write
+map. Both versions are from the PCPP course, and both versions are examined in
+\cite{mystery}. Howver, \cite{mystery} examines only the striped-write map
+with respect to false sharing.
+
+Both implementations follow the same overall strategy: Key-value pairs are
+stored in buckets, chosen by hashing they key. Buckets are implemented as linked
+lists, allowing a single bucket to hold multiple key-value pairs. This
+takes care of hash collisions. Each bucket is assigned to a stripe, and each
+stripe is associated with a single lock that guards operations on buckets in
+that stripe.
+
+The code included here is minimal. The hashmap implementations are still used as
+exercises in the PCPP course, and I do not wish to deprive students of the
+satisfaction of completing them. The full implementations are fairly intricate,
+but to see the risk of false sharing overhead, we need only consider the data
+structures they use internally.
+
+We use a quasi thread-local counter as the stress pattern for our hashmap
+experiments. Each thread reads its own segment of the input, and stores the sum
+of the inputs in a shared hashmap. Each thread uses a unique thread-id as key
+for its own counter. Whether the counters are effectively thread-local depends
+on whether the thread-ids hash to buckets in the same stripe.
+Experiments are run with 32 stripes on all platforms, regardless of thread
+count. The input sequence consists of 33 million integers, divided evenly
+between threads.
+
+\begin{code}
+\begin{Verbatim}[frame=single]
+  let taskCount parallel tasks do {
+      final int threadId = ...;
+      final int to = ..., from = ... ;
+      map.put(threadId, 0);
+      for(int j = from; j < to; ++j) {
+        int a = inputSequence[j];
+        map.put(threadId, map.get(threadId) + num);
+      }
+      threads.add(t);
+    }
+\end{Verbatim}
+	\caption{Simplified code for the quasi thread-local counter we use for
+	the hashmap experiments.}
+\end{code}
+
 \begin{code}
 \begin{Verbatim}[frame=single]
   public static class StripedMap<K,V> {
@@ -803,8 +1104,30 @@ call to \java{join()}.
     ...
   }
 \end{Verbatim}
-	\caption{The most significant fields in the StripedMap class}
+	\caption{The most significant fields in the StripedMap class.}
 \end{code}
+
+\subsubsection{Striped map}
+The striped map relies on locking for both reading and writing operations (such
+as \java{get} and \java{put}). This ensures mutual exclusion as well as
+visibility of updates.
+
+The elements of the \java{locks} array pose a risk of false sharing: An
+\java{Object} instance takes up 16 bytes\footnotemark, which means we can fit
+up to four locks in a single 64-byte cache line. Taking or releasing a lock can
+then falsely invalidate three other locks in the caches of other CPU cores.
+
+The \java{buckets} and \java{sizes} fields are also candidates for false
+sharing, but are unlikely to cause significant overhead: Writes and reads to
+these fields are protected by locks, so the contention of these fields is
+bounded, and likely overshadowed, by the contention of the locks.
+
+\footnotetext{In chapter \ref{chap:javamem}, we saw that this is the case on our
+three platforms, but it depends on the specific Java runtime platform.}
+
+Figures \ref{fig:hashmap-striped-i5} and \ref{fig:hashmap-striped-i7-xeon} show
+the wall-clock execution time when using the striped hashmap with different
+amounts of padding between the locks.
 
 \begin{code}
 \begin{Verbatim}[frame=single]
@@ -815,8 +1138,37 @@ call to \java{join()}.
     ...
   }
 \end{Verbatim}
-	\caption{The most significant fields in the StripedWriteMap class}
+	\caption{The most significant fields in the StripedWriteMap class.}
 \end{code}
+
+\subsubsection{Striped-write map}
+The striped-write map works in much the same way as the striped map, except it
+lowers lock contention by not taking locks for read operations like \java{get}.
+Visibility of writes is guaranteed by piggy-backing on the visibility
+guarantees of the \java{AtomicIntegerArray} class, used to store element-counts
+for each bucket. One disadvantage of this technique is that the \java{sizes}
+elements now effectively become \java{volatile}, causing a larger coherence
+overhead.
+
+Figure \ref{fig:hashmap-stripedwrite} shows the wall-clock execution time when
+using the striped-write hashmap with different amounts of padding between the locks.
+
+The experiments show that false sharing has a pronounced impact on both hashmaps
+across all three platforms, as simply padding elements of shared datastructures
+improve execution times.
+The biggest improvement is with the striped-write map on the Xeon platform.
+Here, using 112 bytes of padding reduces the execution time by 33\%. The
+smallest improvement is with the striped hashmap on the i5 platform. Here, using
+48 bytes of padding reduces the execution time by 17\%.
+
+There is an interesting artifact in the results: The striped-write map performs
+remarkably worse than the striped map in these experiments. This may be
+explained by its use of an immutable implementation of the \java{ItemNode}
+class: Each write allocates new nodes, incurring both the cost of the
+allocations and of garbage collecting the old nodes. A stress pattern with a
+higher ratio of read- to write write-operations (the ratio in our thread-local
+counter is $\sim 1/1$) should benefit from using the striped-write map, as the
+cost saved by not locking eclipses the cost of the extra allocations.
 
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
@@ -831,15 +1183,13 @@ call to \java{join()}.
 \input{plots/hashmap-striped-i7-xeon.tex}
 \caption{The striped hashmap problem on the i7 and Xeon platforms. The plot shows
 	wall-clock execution time in ns., as a function of padding in bytes.}
-\label{fig:hashmap-striped-i7}
+\label{fig:hashmap-striped-i7-xeon}
 \end{figure}
-
-\subsection{Striped-write Hashmap}
 
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
 \input{plots/hashmap-stripedwrite.tex}
-\caption{The striped write-hashmap problem on all 3 platforms. The plot shows
+\caption{The striped-write hashmap problem on all 3 platforms. The plot shows
 	wall-clock execution time in ns., as a function of padding in bytes.}
-\label{fig:hashmap-striped-xeon}
+\label{fig:hashmap-stripedwrite}
 \end{figure}

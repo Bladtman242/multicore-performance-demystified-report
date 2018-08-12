@@ -1,0 +1,48 @@
+\chapter{Method}
+To better understand the effects of memory layout, padding, and false sharing
+overhead on managed platforms, we perform a series of experiments in the form of
+benchmarks. The experiments are described in detail in chapter
+\ref{chap:experiments}. Experiments are performed on three different platforms:
+
+\begin{description}
+\item [i5] A laptop with an Intel i5-4210U CPU, rated at 1.7Ghz, 2.7GHz with Intel
+Turbo Boost, with L1, L2, and L3 cache sizes of 32KiB, 256KiB, and 3072KiB
+respectively. The CPU has 2 physical cores, 4 virtual cores with
+hyper-threading.
+\item [i7] A Desktop with an Intel i7-4790 CPU, rated at 3.6Ghz, 4.0GHz with Intel
+Turbo Boost, with L1, L2, and L3 cache sizes of 32KiB, 256KiB, and 3072KiB
+respectively. The CPU has 4 physical cores, 8 virtual cores with
+hyper-threading.
+\item [Xeon] A server with \textbf{two} Intel Xeon E5-2680 v3 CPUs each rated at
+2.5Ghz, 3.3 with Intel Turbo Boost, with L1, L2, and L3 cache sizes of 32KiB,
+256KiB, and 3072KiB respectively, for a total of 60MiB of cache. Each CPU has 12
+physical cores, 24 virtual cores with hyper-threading, for at total of 48 virtual cores.
+\end{description}
+
+The i5 and i7 platforms run Arch Linux, and experiments are performed on the OpenJDK
+Runtime Environment, version 1.8.0\_172. The Xeon platform runs Windows 10, end
+between the OpenJDK and Oracle platforms, but it lets us see that 
+experiments are run on the Oracle Java(TM) SE Runtime Environment, version
+1.8.0\_144.
+
+Benchmarks are run using the \java{mark8} method from \citeauthor{microbmarks}'s
+microbenchmarking framework \cite{microbmarks}, adapted to include a warm-up
+phase.
+
+Using benchmarks on a managed platform like java limits our ability to interpret
+our results: We cannot examine the nature and cause of individual memory
+operations. Instead, we benchmark multiple variations of the same programs, and
+attempt to interpret the results in terms of the variations. This involves a
+certain amount of guesswork, and we cannot be sure that the differences between
+two implementations do not effect unintended changes to the runtime behaviour.
+Similarly, we cannot know the actual memory layout at runtime. We can only guess
+the layout effects of our optimizations, and see if our results agree
+with our assumptions about the memory layout.
+
+Our results are also subject to noise from other programs. While attempts have
+been made to disable periodic operating-system processes as well as
+application-software on all platforms, it is almost certain that our experiments
+are not allotted all hardware resources when they run. In chapter
+\ref{chap:experiments} we measure the idle CPU load of each platform, to
+convince ourselves that the noise levels are insignificant.
+

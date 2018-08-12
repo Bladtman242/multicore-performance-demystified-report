@@ -20,11 +20,20 @@
 \usepackage{csquotes}
 \MakeOuterQuote{"}
 
-%define a new float environment, like figure and table, for code snippets
+%define new float environments, like figure and table, for code snippets etc
 \DeclareFloatingEnvironment[
     placement=hbtp,
     name=Code snippet,
 ]{code}
+
+\DeclareFloatingEnvironment[
+    placement=hbtp,
+    name=Padding technique,
+    within=none,
+]{padding}
+
+%set the numbering style of padding to letters instead of numbers
+\renewcommand{\thepadding}{\Alph{padding}}
 
 %redefine percentage sign to be a little smaller
 \let\oldpct\%
@@ -67,18 +76,14 @@
 
 \mynote{Refer to bench-marks: (cyclic) Read-times vs simple math operation}
 
-\chapter{Method}
-\mynote{benchmarking, limitations, and concessions (incl. background
-noise in bmarks, Java/hw memory-layout impedance)}
-\mynote{parallelizability plots may go here, to describe the parameters of the
-experiments (or it may go in the experiments section)}
+\input{method.tex}
 
 \chapter{The types of "time waste" in multicore programming}
 \mynote{"Cache-friendly" gets a new meaning}
 
 \input{experiments.tex}
 
-\chapter{Advice for Multicore Programmers}
+\chapter{Advice for multicore programmers}
 \mynote{Add observations from openjdk's implementations of
 atomicint/atomicintarray, LongAdder, and Striped64 classes. Also from the commit
 message introducing @contended to openjdk, and that one blog-post suggesting to
