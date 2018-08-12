@@ -60,25 +60,7 @@ divided into fixed chunks of equal size, each of which can be
 accessed individually using fixed-width addresses. This "fixed-width" is
 generally what is meant when we say an architecture is "x-bit": A 64-bit
 architecture uses memory addresses that are 64-bit long, and has 64-bit long
-words. This terminology is \textit{not} consistent and some architectures may
-have word sizes that are not the same as the address size. Furthermore,
-definitions of the terms "word" and "address" that are both precise and useful
-have proven elusive: Existing 64-bit architectures do not use the full 64-bit
-address space, and may impose requirements on how the unused bits are set.
-Virtual addresses, as used by programmers, are translated to physical addresses
-using complicated techniques that may be implemented both in electronic circuitry and in
-the operating system. The term "word" seems to simply mean "some useful size for
-data chunks on a given architecture". Useful because memory addresses, CPU
-instructions, CPU registers, integers, floating point numbers, and the amount of
-memory that is described by a single address are \textit{typically} the size of
-a word, or some multiple or fraction of it. For example, x86-64 has 64-bit words
-and addresses, but some implementations support 80- or even 128-bit floating
-point operations.
-
-On x86 (and x86-64), an address refers to an individual byte, not a word. However,
-reading from an address in main memory does not necessarily mean reading just
-that one byte. Though it not always the case, we generally consider the word
-size to be the unit of memory operations.
+words.
 
 \section{CPU caches}
 Regardless of how the software designer thinks of memory, the CPU cache is not
@@ -208,3 +190,30 @@ false sharing impact)}
 \mynote{mention that the unit here is technically a "block". Cache line refers
 to a set/way pair, but cache-line and block are used interchangeably in
 literature}
+
+\subsubsection{A word on words}
+The previous sections makes some broad statements regarding word size and the
+nomenclature of "x-bit" architectures.
+
+In reality, this terminology is \textit{not} consistent and some architectures may
+have word sizes that are not the same as the address size. Furthermore,
+definitions of the terms "word" and "address" that are both precise and useful
+have proven elusive: Existing 64-bit architectures do not use the full 64-bit
+address space, and may impose requirements on how the unused bits are set.
+Virtual addresses, as used by programmers, are translated to physical addresses
+using complicated techniques that may be implemented both in electronic
+circuitry and in the operating system. The term "word" seems to simply mean
+"some useful size for data chunks on a given architecture". Useful because
+memory addresses, CPU instructions, CPU registers, integers, floating point
+numbers, and the amount of memory that is described by a single address are
+\textit{typically} the size of a word, or some multiple or fraction of it. For
+example, x86-64 has 64-bit words and addresses, but some implementations support
+80- or even 128-bit floating point operations.
+
+The same applies to the word "byte", but "byte" is much more consistently used
+to mean 8 bits.
+
+On x86 (and x86-64), an address refers to an individual byte, not a word. However,
+reading from an address in main memory does not necessarily mean reading just
+that one byte. Though it not always the case, we generally consider the word
+size to be the unit of memory operations.
