@@ -1,13 +1,5 @@
 \chapter{Java and memory}
 \label{chap:javamem}
-\mynote{Explain relevant details of Java memory layout, to the point where the
-Method section can refer back here to say that we can't fully control the layout
-for our benchmarks}
-\mynote{Use and introduce the JOL tool}
-\mynote{I want to make sure that we ruminate a bit about dense allocation of
-locks here. It is not obvious that locking will write to the lock object, but
-it seems like it might be the case, and I don't want to clarify this in the
-experiments}
 
 As noted previously, the way programming languages model memory is very
 different from how it is implemented in hardware. This is especially true for
@@ -15,18 +7,19 @@ high-level languages, and doubly so for garbage-collected languages like Java.
 
 Java programmers cannot directly control things like memory barriers and memory
 layout. Instead we get the effect of barriers through judicious use of the
-\java{synchronized} and \java{volatile} keywords, and the guarantees given by
-the Java Language Specification\cite{javaspec} and the classes in the
-\java{java.util.concurrent} package.
+\java{synchronized} and \java{volatile} keywords, the classes in the
+\java{java.util.concurrent} package, and the guarantees given by
+the Java Language Specification\cite{javaspec}.
 The language specification gives no such guarantees regarding memory
-layout, so we have only limited control over it: We can take steps to affect how
+layout, making it is harder to control: We can take steps to affect how
 data is laid out in memory, and we can verify the effectiveness of our efforts
-by benchmarking our programs, only we do not have guarantees that our
+by benchmarking our programs, but we do not have guarantees that our
 optimizations will work on other Java runtimes, or with future Java versions.
 
-The following sections explain briefly the relationship between Java's
+In the following sections we first look at the relationship between Java's
 concurrency constructs and the memory hardware as described in chapter
-\ref{chap:arch}
+\ref{chap:arch}, then we look at 7 techniques for manipulating the memory layout
+in Java.
 
 \section{Data sharing}
 In Java, the concept of \textit{happens-before order} most closely captures the
@@ -73,7 +66,7 @@ technique, besides the silly wrapper class, is that it requires more memory.
 Each \java{Holder} instance takes up 16 bytes of memory instead of the 4 bytes
 an \java{int} would have used. There is also the additional memory overhead of
 storing the object pointers in the array. Additionally, there is the performance
-cost of an added indirect; as accessing the elements now requires reading the
+cost of the added indirect, as accessing the elements now requires reading the
 object pointer from the array, and \textit{then} reading the object.
 
 The implementers of the Java Class Library seem to favour the undocumented
@@ -88,14 +81,29 @@ classes are well commented, highly illustrative, and well suited for learning
 about both the \java{Unsafe} class and multicore software design in
 general.
 
+To facilitate mutual exclusion, Java provides locking mechanisms through the
+\java{synchronized} keyword, and through the \java{java.util.concurrent.locks}
+package. Lock implementations vary with the underlying hardware, and are usually
+provided by the operating system. The details therefore depend on the runtime
+platform, but the use of memory barriers and compare-and-swap appears to be
+ubiquitous. This means lock operations depend on the cache coherence protocol,
+which makes them subject to false sharing overhead. It is not immediately
+obvious that the actual lock data is stored in the object headers on the heap:
+The Java virtual machine could in theory keep a global table of locks. In
+\cite{mystery} \citeauthor{mystery} found that spacing the allocation of locks
+significantly improves performance in a multicore context, leading us to believe
+that lock data is indeed stored in the object headers of the lock object. This
+means we can prevent false sharing of locks if we can avoid dense allocation of
+locks on the heap.
+
 Like the mechanisms provided to us, the guarantees provided by the Java memory
-model do not correspond directly to those we know from hardware either. Reading
+model do not correspond directly to those we know from hardware. Reading
 from a \java{volatile} field ensures the visibility of updates made by other
 threads \textit{before they wrote to the same field}. With what we know from
 \cite{mckenny-barriers}, it is not clear why threads reading a different
 \java{volatile} field do not get the same guarantee.
 
-Nonetheless, the remainder of this report will show that the hardware view taken
+The remainder of this report will nonetheless show that the hardware view taken
 in \cite{mckenny-barriers} is very useful when considering the multicore
 performance of Java programs. For this reason, with respect to multicore performance, we adopt
 the view that whenever the Java memory model guarantees happens-before-order, it
@@ -577,7 +585,8 @@ annotation, but the output of the estimates command can be seen in figure
 \ref{jol:contended}. We can see that several large (128-132) unused memory
 regions have been added to the instance. The annotation takes an optional
 argument for the name of the field group. Fields annotated using the same
-argument are put in a contiguous memory segment.
+argument are put in a contiguous memory segment. The \java{@Contended}
+annotation can also be used on class declarations.
 
 \begin{figure}[h]
 \begin{Verbatim}[frame=single, numbers=left]
