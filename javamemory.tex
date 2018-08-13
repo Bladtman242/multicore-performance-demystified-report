@@ -214,6 +214,19 @@ To achieve a spaced memory layout with arrays of object types, we must pad the
 	\label{padding:object-array}
 \end{padding}
 
+\begin{figure}
+	\fbox{\includegraphics[width=1\textwidth]{img/padding.jpg}}
+	\caption{The memory layout achieved with padding technique
+	\ref{padding:object-array}. Each dotted row is 8 bytes. To the left we
+	see the array of object pointers, with 64 unused bytes between two
+	pointers. To the right we see the \java{Holder} instances on the heap.
+	Each instance occupies 16 bytes of space, followed by 64 bytes of unused
+	\java{int} arrays. The markings on the right side indicate cache line
+	boundaries. The division between the array on the left and the objects
+	on the right is stylistic: They are both allocated on the heap.}
+	\label{fig:spacedholders}
+\end{figure}
+
 Padding technique \ref{padding:object-array} lets us allocate object
 types with padding between them. In addition to the objects, an array of
 pointers to the objects is allocated using the idea from technique
@@ -226,6 +239,13 @@ store the array length), $64/4 = 16$ and $64/8 = 8$ are good values for
 \texttt{pa} and \texttt{pb} when cache lines are 64 bytes. We may need to keep
 references to the dummy arrays somewhere. Otherwise the garbage collector may
 remove them and compact the objects into the space occupied by the arrays.
+Figure \ref{fig:spacedholders} depicts the memory layout achieved with technique
+\ref{padding:object-array}. The figure makes it clear that we are using more
+padding than necessary, causing the \java{Holder} instances to shift around in
+the cache lines. We could fix this by subtracting the size of a \java{Holder}
+from the amount of padding we use, but it would make it harder to write
+generalised methods for padding. The same applies to spacing the elements in the
+array.
 
 Padding both the object allocation and the array elements means we can update
 both array elements and object fields without risk of false sharing. In the

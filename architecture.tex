@@ -144,9 +144,11 @@ a CPU core from main memory are stored in cache, under the
 assumption that having accessed it once, the data will likely be accessed again
 soon after. Similarly, the cache works as a buffer for writes to main memory:
 When a CPU writes a value to a memory address it first copies the full
-cache-line into its own cache. Then the relevant part of the cache-line is
+cache-line into its own cache; then the relevant part of the cache-line is
 overwritten in cache. The cache-line is written back to memory (or to a
-cache higher up in the hierarchy) at a later time.
+cache higher up in the hierarchy) at a later time. Caches that buffer writes
+like this are known as write-back caches, as opposed to write-through caches
+where writes are immediately propagated into main memory.
 
 The contents of main memory may also be cached by clever prefetch mechanisms that
 anticipate future accesses. For example, iterating over the elements of an array
@@ -161,8 +163,7 @@ The first access is to address $f(0) = 0$, the second to $f(1) = 3$, etc.
 Individual caches have associated prefetch-hardware that essentially performs
 regression-analysis of actual memory accesses in order to guess the constants of
 the stride function and perform reads before they are requested. Modern
-commodity hardware can generally predict strides that are linear functions, not
-just sequential ones.
+commodity hardware can generally predict strides that are linear functions.
 
 Some hardware platforms (e.g. x64 and x86-64) also provide instructions for
 prefetching; letting software designers prefetch manually if the hardware
@@ -177,22 +178,34 @@ of data from main memory in their own caches (and in registers as well), it is
 possible for different cores to have different ideas of what the value stored at
 a certain memory address is.
 
-\mynote{add diagram showing the same "variable" differing in
-main-mem/cpu0-cache/cpu1-cache/cpu1-registers}
+\begin{figure}[h]
+	\fbox{\includegraphics[width=1.0\textwidth]{img/incoherence.jpg}}
+	\caption{Two CPUs with incoherent views of what is stored at memory
+	location 1}
+\end{figure}
+
+The state depicted above can be reached by the following sequence of actions:
+\begin{enumerate}
+	\item Main memory has the value 4 stored at location 1.
+	\item CPU1 reads location 1 from main memory, and decrements it by 1.
+	\item CPU0 calculates a new value (6) in a register, and is about to
+		write it to location 1.
+	\item CPU1 writes the result (3) back to location 1, causing it to be
+		stored in cache.
+\end{enumerate}
 
 This incoherence between what different cores see as the memory contents at a
 certain address, and the way it is solved in hardware, is what degrades
 performance in programs with false sharing.
 
-\mynote{Continue writing: write-back caches (as described by drepper), MESI
-state states, store-buffers and invalidation queues (explanation of
-false sharing impact)}
+\mynote{Continue writing: MESI state states, store-buffers and invalidation
+queues (explanation of false sharing impact)}
 \mynote{mention that the unit here is technically a "block". Cache line refers
 to a set/way pair, but cache-line and block are used interchangeably in
 literature}
 
 \subsubsection{A word on words}
-The previous sections makes some broad statements regarding word size and the
+The previous sections make some broad statements regarding word size and the
 nomenclature of "x-bit" architectures.
 
 In reality, this terminology is \textit{not} consistent and some architectures may
