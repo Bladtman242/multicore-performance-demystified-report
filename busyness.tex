@@ -1,5 +1,6 @@
 \chapter{The busyness of CPUs}
 \label{chap:busyness}
+
 \mynote{"Cache-friendly" gets a new meaning}
 
 %\chapter{Memory operations are expensive}
@@ -9,3 +10,24 @@ concerned primarily with mem ops...}
 \mynote{(may be "the new FLOPS")}
 
 \mynote{Refer to bench-marks: (cyclic) Read-times vs simple math operation}
+
+\begin{figure}
+\centering
+\begin{tabular}{|p{4cm}|p{4cm}|p{3cm}|}
+\hline
+Cause & Effect & CPU behaviour \\
+\hline
+\hline
+Lock contention & Threads wait for the lock & Idle \\
+\hline
+Optimistic compare-and-swap, repeated tries & repeatedly undoes each others work
+& Busy \\
+\hline
+Cache interference & Cache thrashing with little progress & Stalled \\
+\hline
+Unpredictable cache accesses & No prefetching & Stalled \\
+\hline
+\end{tabular}
+	\caption{}
+	\label{table:timewaste}
+\end{figure}

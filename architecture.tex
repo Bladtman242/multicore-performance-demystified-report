@@ -340,9 +340,10 @@ that CPU1 executes thread1.
 
 \begin{figure}[hbtp]
 	\centering
-	\begin{tabular}{r|c|c|c|c}
-	& & & \multicolumn{2}{c}{State} \\
+	\begin{tabular}{|r|c|c||c|c|}
 	\hline
+	& & & \multicolumn{2}{c|}{State} \\
+		\cline{4-5}
 	Sequence \# & CPU \# & Operation & 0 & 1\\
 	\hline
 	\hline
@@ -361,7 +362,6 @@ that CPU1 executes thread1.
 	6 & 1 & Read & I & E\\
 	\hline
 	7 & 1 & Write & I & M\\
-	\hline
 		\multicolumn{5}{c}{\vdots}
 \end{tabular}
 	\caption{Possible sequence of cache operations when executing the code
