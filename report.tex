@@ -17,6 +17,7 @@
 \usepackage{listings}
 \usepackage{newfloat}
 \usepackage{fancyvrb}
+\usepackage{pdfpages}
 \usepackage{csquotes}
 \MakeOuterQuote{"}
 
@@ -71,24 +72,13 @@
 
 \input{javamemory.tex}
 
-\chapter{Memory operations are expensive}
-\mynote{(may be "the new FLOPS")}
-
-\mynote{Refer to bench-marks: (cyclic) Read-times vs simple math operation}
+\input{busyness.tex}
 
 \input{method.tex}
 
-\chapter{The types of "time waste" in multicore programming}
-\mynote{"Cache-friendly" gets a new meaning}
-
 \input{experiments.tex}
 
-\chapter{Advice for multicore programmers}
-\mynote{Add observations from openjdk's implementations of
-atomicint/atomicintarray, LongAdder, and Striped64 classes. Also from the commit
-message introducing @contended to openjdk, and that one blog-post suggesting to
-pad using inheritance. Also, padding strategies may be examined by using JOL
-here, if not in earlier sections}
+\input{advice.tex}
 
 \clearpage
 \nocite{*}

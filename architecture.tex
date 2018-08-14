@@ -27,7 +27,15 @@ components:
 	\item Main memory (colloquially RAM), shared between all CPUs.
 \end{itemize}
 
-\mynote{add diagram of main-memory $\to$ L3-L1 cache $\to$ cpu cores}
+Below is an image of the hardware topology of a machine with 2 Xeon E5 CPUs,
+each with 12 physical cores. The image is generaited with the Open MPI hwloc tool
+
+\includepdf[angle=90]{img/lstopo.pdf}
+
+The image shows that main memory is shared between the two CPUs, each CPU has
+its own L3 cache that is shared among its cores, and each physical core has its
+own L2, L1d and L1i caches, shared between its virtual cores. Layer 1
+is divided into separate caches for data (L1d) and CPU instructions (L1i).
 
 This model excludes many aspects of real computers. Such as: The buses that
 transfer data between hardware components, address-translation hardware such as
@@ -63,6 +71,7 @@ architecture uses memory addresses that are 64-bit long, and has 64-bit long
 words.
 
 \section{CPU caches}
+\label{sec:caches}
 Regardless of how the software designer thinks of memory, the CPU cache is not
 generally a part of their interface: cache access happens transparently as we
 access the main memory. It is not however transparent with
@@ -74,9 +83,7 @@ insertion into arrays/vectors, because of the unpredictable memory access
 pattern exhibited by traversing a linked list. In this section we take a look
 at the performance characteristics of CPU caches, and see that cache-friendly
 design in multicore programming is radically different from cache-friendly
-design in single-core programming. \mynote{the "see that cache..." claim is so
-essential to the report that it should be stated earlier (maybe even abstract or
-introduction, otherwise just beginning of arch chapter), and repeated here.}
+design in single-core programming.
 
 A word of caution:
 Since the cache is mostly invisible to software designers, hardware designers
@@ -115,11 +122,11 @@ cache entry: Part of the address is implied by the set used. The need to search
 the full cache is similarly eliminated: The hardware now only needs to search
 within a single set.
 
-The storage in each way in a set is called a cache-line. The cache-line
-size can be thought of as a unit size of cache operations. The cache-line size
+The storage in each way in a set is called a cache line. The cache line
+size can be thought of as a unit size of cache operations. The cache line size
 is important, because it is effectively the unit size for memory operations that
 do not explicitly bypass the cache! Most, if not all, of
-Intel's x86-64 architectures use 64-byte cache-lines\cite{inteloptimize}.
+Intel's x86-64 architectures use 64-byte cache lines\cite{inteloptimize}.
 
 The downside of set-associative caches is, that unlike fully associative
 caches, they cannot cache an arbitrary set of memory entries: In a 2-way
@@ -144,8 +151,8 @@ a CPU core from main memory are stored in cache, under the
 assumption that having accessed it once, the data will likely be accessed again
 soon after. Similarly, the cache works as a buffer for writes to main memory:
 When a CPU writes a value to a memory address it first copies the full
-cache-line into its own cache; then the relevant part of the cache-line is
-overwritten in cache. The cache-line is written back to memory (or to a
+cache line into its own cache; then the relevant part of the cache line is
+overwritten in cache. The cache line is written back to memory (or to a
 cache higher up in the hierarchy) at a later time. Caches that buffer writes
 like this are known as write-back caches, as opposed to write-through caches
 where writes are immediately propagated into main memory.
@@ -171,38 +178,205 @@ prefetch mechanisms are unsatisfactory\cite{whatprogrammersshouldknow}.
 Similarly, there are so called "non-temporal" instructions available to read and
 write to main memory without the values being cached.
 
-\subsection{Data sharing}
+\subsection{Data sharing and cache coherence}
 The fact that writes are buffered in the caches is our first hint that
 multicore programming is non-trivial. As different CPU cores store copies
 of data from main memory in their own caches (and in registers as well), it is
 possible for different cores to have different ideas of what the value stored at
 a certain memory address is.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 	\fbox{\includegraphics[width=1.0\textwidth]{img/incoherence.jpg}}
 	\caption{Two CPUs with incoherent views of what is stored at memory
 	location 1}
+	\label{fig:incoherence}
 \end{figure}
 
-The state depicted above can be reached by the following sequence of actions:
+Figure \ref{fig:incoherence} shows 2 CPU cores, their registers, caches, and
+shared main memory. The CPUs have reached a state where there are 3 different
+values for the same memory location. None of which can be said to be more
+"correct" than the others.
+The state depicted in figure \ref{fig:incoherence} can be reached e.g. by the
+following sequence of actions:
+
 \begin{enumerate}
 	\item Main memory has the value 4 stored at location 1.
 	\item CPU1 reads location 1 from main memory, and decrements it by 1.
 	\item CPU0 calculates a new value (6) in a register, and is about to
 		write it to location 1.
 	\item CPU1 writes the result (3) back to location 1, causing it to be
-		stored in cache.
+		stored in cache, but not in main memory yet.
 \end{enumerate}
+
+It is up to the software designer or compiler to avoid inconsistencies in CPU
+registers. The remainder of this chapter is concerned with the how hardware
+helps us avoid them in cache.
+
+Multicore architectures solve such incoherences with "cache coherence
+protocols". The purpose of a cache coherence protocol is to ensure that different
+caches agree -- to some extent -- what the contents of a specific cache line
+are. We consider the MESI protocol \cite{mesi,mckenny-barriers}, which
+guarantees that at most one CPU modifies its copy of a cache line at a
+time.
+
+MESI lays the foundation for the MESIF and MOESI protocols designed for Intel
+and AMD respectively. Different architectures use different coherence protocols
+of varying complexity.
+
+The unit of the coherence protocol is called a "coherence block". On machines
+with hardware coherence, like the ones used for this report, coherence blocks
+are cache lines. On DSM and NUMA machines, they may be pages
+instead\cite{falsedef}.
 
 This incoherence between what different cores see as the memory contents at a
 certain address, and the way it is solved in hardware, is what degrades
-performance in programs with false sharing.
+performance in programs with false sharing. This report uses the terms cache
+line and coherence block interchangeably.
 
-\mynote{Continue writing: MESI state states, store-buffers and invalidation
-queues (explanation of false sharing impact)}
-\mynote{mention that the unit here is technically a "block". Cache line refers
-to a set/way pair, but cache-line and block are used interchangeably in
-literature}
+The MESI protocol works by attaching one of four states to each cache line
+entry in each cache:
+
+\begin{description}
+\item[Modified] means the cache line is exclusive to this cache, and has been
+modified by the CPU since it was cached. The cache line is invalid in the caches of all other cores.
+\item[Exclusive] means the same as modified, except the cache line has not been modified since it was cached.
+\item[Shared] means other caches have a copy of this cache line too.
+\item[Invalid] means the cache line is not in cache. Either because it has not
+been cached, or because it has been invalidated by request of another CPU.
+\end{description}
+
+ The MESI protocol takes its name from these states.
+
+Rather than restating the full protocol here, we will describe the most
+pertinent behaviours that result from read and write operations. This is
+illustrative of the protocol, and sufficient for our purposes.
+
+The default behaviour, with little overhead or benefit from the coherence
+protocol, is as follows: When a CPU writes to cache, it must first ensure that
+the cache line is in the S or M state. If it is not, the CPU must send an
+invalidation message to all other CPUs. The other CPUs must then set the cache
+line state to I and respond with an acknowledge message. If one of the other
+CPUs has the cache line in the M state, it will send the value of the cache line
+along with the acknowledge message. Other CPUs may be able to "snoop" the
+returned value into their caches as well, if they are connected to an
+interconnect between the requesting and responding CPUs. Read operations work
+the same way, but the other CPUs set the cache line state to S instead of I.
+
+For performance reasons, when a CPU performs a write it does not actually wait
+for the acknowledge messages. Instead it records the write to a CPU-local store
+buffer, and continues execution. Later, when the cache line arrives in its
+cache, the buffered value is written into the cache. Similarly, when receiving
+an invalidation message, the CPU doesn't immediately invalidate the cache line.
+It sends back the acknowledge message, and the cached value if the cache line is
+set as M, and then adds the actual invalidation to a queue. The CPU will however
+process the invalidation before sending any other messages regarding that cache
+line\cite{mckenny-barriers}.
+
+The guarantees provided by the coherence protocol by default are very weak.
+To reap the benefits of the coherence protocol, we must endure its full
+overhead. Software designers achieve this by inserting memory barrier
+instructions. Different sets of memory barrier instructions are provided by
+different operating systems and architectures. What matters to us is that some
+of them are used to force CPUs to flush the store buffers and to process the
+invalidation queues, causing momentary coherence between the CPUs that execute
+them. Essentially, memory barriers cause the CPUs to stall while they perform
+coherence operations.
+
+It bears repeating that cache operations are always performed in accordance with
+the coherence protocol, regardless of whether or not we use memory barriers.
+This means the overhead of sending invalidation and acknowledge messages is
+always present. The memory barriers affect the use of store buffers and
+invalidation queues, thus improving coherence and increasing the coherence
+overhead.
+
+\subsection{False sharing of cache (lines)}
+If two CPUs write to the same memory location, the cache line containing that
+location is passed from one cache to the other. This is the wanted outcome, and
+ensures coherence between the caches. If two CPUs write to \textit{different}
+memory locations inside the same cache line, the exact same thing happens, but
+with no benefit. The coherence protocol dictates the cache invalidations in
+order to achieve cache coherence when we do not need it. We use the term "false
+sharing of cache lines" to describe two or more CPU cores accessing disjoint
+sets of data located within the same cache line. The unnecessary cache
+invalidations caused by false sharing are called "false invalidations". We use
+the term "false sharing overhead" to refer to the full overhead of the coherence
+protocol caused by false sharing of cache lines, including sending and
+processing the false invalidations
+
+Consider the two threads in code snippet \ref{code:falsesharing} running in
+parallel on two CPUs. The threads never operate on the same memory location, but
+if the two array elements are stored in the same cache line the CPUs will keep
+sending false invalidation messages to each other. Without memory barriers this
+causes unnecessary coherence messages to be sent back and forth, but much of the
+overhead will be hidden by the store buffers and invalidation queues. With
+memory barriers, the CPUs will be forced to stop and wait for each other to
+invalidate the cache line and send the acknowledge message back.
+
+\begin{code}
+\begin{Verbatim}[frame=single]
+  final int[] arr = ...;
+  ...
+  //Thread 0
+  for(;;) {
+	  arr[0]++;
+  }
+  ...
+  //Thread 1
+  for(;;) {
+	  arr[1]++;
+  }
+  ...
+\end{Verbatim}
+	\caption{Pseudo showing two threads accessing different sets of data,
+	that may be located in the same cache line.}
+	\label{code:falsesharing}
+\end{code}
+
+The table in figure \ref{table:invalidationsequence} shows one possible sequence
+of cache operations when executing the threads. The sequence in the table
+assumes that the increment operations are surrounded by memory barriers, the two
+array elements are in the same cache line, and that CPU0 executes thread 0 and
+that CPU1 executes thread1.
+
+\begin{figure}[hbtp]
+	\centering
+	\begin{tabular}{r|c|c|c|c}
+	& & & \multicolumn{2}{c}{State} \\
+	\hline
+	Sequence \# & CPU \# & Operation & 0 & 1\\
+	\hline
+	\hline
+	0 & & & I & I\\
+	\hline
+	1 & 0 & Read & E & I\\
+	\hline
+	2 & 0 & Write & M & I\\
+	\hline
+	3 & 1 & Read & I & E\\
+	\hline
+	4 & 0 & Read & S & S\\
+	\hline
+	5 & 0 & Write & M & I\\
+	\hline
+	6 & 1 & Read & I & E\\
+	\hline
+	7 & 1 & Write & I & M\\
+	\hline
+		\multicolumn{5}{c}{\vdots}
+\end{tabular}
+	\caption{Possible sequence of cache operations when executing the code
+	in snippet \ref{code:falsesharing}. The values in the state column
+	indicates the MESI state of the shared cache line in the caches of CPU0
+	and CPU1 respectively, after the operation in the row has been performed.}
+	\label{table:invalidationsequence}
+\end{figure}
+
+As software designers, we cannot disable the coherence protocol, nor can we
+change the cache line size. If a program suffers from false sharing overhead, we
+must change the way we allocate data in memory. Ideally, data segments that are
+primarily used by a single core should be close together, and data segments that
+are shared between cores, and updated, should not share cache lines with other segments
+-- unless they are always updated together.
 
 \subsubsection{A word on words}
 The previous sections make some broad statements regarding word size and the

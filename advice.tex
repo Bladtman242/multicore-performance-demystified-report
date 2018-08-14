@@ -1,0 +1,42 @@
+\chapter{Advice for multicore programmers}
+\label{chap:advice}
+We have taken a look at cache behaviours, and seen that extra care needs to
+taken when writing cache-friendly multicore software.
+In particular, the cache coherence protocol means grouping data closely
+together in memory, as we are wont to do in singlecore software, can cause
+devastating false sharing overhead on multicore systems.
+
+We have tried to relate the concepts of cache coherence and
+memory barriers to Java, and have seen that steps can be taken to affect
+multicore cache performance in Java programs significantly.
+
+We have seen from experiments that different multicore designs using locks or
+optimistic concurrency via compare-and-swap can be particularly sensitive to
+false sharing, and that using padded or spaced memory layouts can significantly
+improve performance of such applications. We have looked at designs that avoid
+sharing data between CPU cores by using thread-local data structures as the
+program runs, and only consolidating the results in end. When available, these
+designs perform remarkably well: They avoid not only false sharing, the data
+sharing in general.
+
+The lessons learned from this project are:
+\begin{enumerate}
+\item Sharing data between CPUs is expensive. So when practical, use
+thread-local designs to avoid sharing.
+\item When avoidance is not practical, identify fields and data structures that
+are subject to updates, and use padding to ensure the updates do not cause false
+invalidations. This applies to all data, but is particularly important to synchronization variables like
+volatile fields, locks, and instances of the classes under the
+\java{java.util.concurrent} package.
+\item All updates are candidates for false sharing overhead. Even if only a
+single thread performs writes, reading threads can force it to change a cache
+line's state from exclusive to shared. This forces the writing thread to perform --
+possibly false -- invalidations for later updates.
+\item Spending a half an hour reading optimization manuals for the hardware
+platforms you use can replace hours of scouring the internet.
+\item Benchmark multicore code. Studying hardware designs, while interesting
+and useful, is a rabbit hole of unbounded depth. Designing software with the
+cache coherence protocol in mind, we still ran into trouble with the L2 cache's
+spatial prefetcher with most locking applications. Or at least we think we did.
+We cannot know for certain, and that is exactly the point.
+\end{enumerate}

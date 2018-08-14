@@ -188,7 +188,7 @@ its own field, there is no need for synchronization. Nonetheless, we perform
 the experiment in variants with and without \java{volatile} integer declarations, to
 see the performance impact in both cases.
 
-Since the fiends are uncontended, we will assume the difference in performance
+Since the fields are uncontended, we will assume the difference in performance
 to be a result of unnecessary coherence operations due to false sharing.
 
 In the experiments with volatile integers, each thread performs 6M increments.
@@ -358,13 +358,14 @@ the number of buckets as the "width" of the histogram.
 \subsubsection{Communication-free}
 As a baseline for the multicore performance of the histogram problem, we examine
 an implementation with minimal communication overhead. The strategy employed can
-be thought of as a kind of avoidance: We arrange it so that part of the problem
-can be solved in parallel, \textit{without ongoing communication between cores}.
-After the parallel step, a single thread consolidates the thread-local
-results produced by each thread. The only necessary communication or
-synchronization is making the thread-local results visible to the thread that
-executes the consolidation step, \textit{after} the parallel step is completed. Code snippet
-\ref{code:histo-lockfree} outlines the implementation of this approach.
+be thought of as a kind of avoidance or confinement: We arrange it so that part
+of the problem can be solved in parallel, \textit{without ongoing communication
+between cores}. After the parallel step, a single thread consolidates the
+thread-local results produced by each thread. The only necessary communication
+or synchronization is making the thread-local results visible to the thread that
+executes the consolidation step, \textit{after} the parallel step is completed.
+Code snippet \ref{code:histo-lockfree} outlines the implementation of this
+approach.
 
 \begin{code}
 \begin{Verbatim}[frame=single]
@@ -517,12 +518,6 @@ placed back-to-back in memory.
 We measure the impact of false sharing by benchmarking versions with different
 amounts of padding between the locks and counters.
 
-\mynote{Because the elements/locks are objects, there is an additional,
-unadvertised,  12 bytes of padding used for the counters, and something similar
-for the locks (I can't say where in the object header the actual lock is, if it
-is even in the object header). This should e noted somewhere, but probably not
-here, as it goes for most of the benchmarks.}
-
 \begin{figure}[hbtp]
 	\centering
 	\begin{tabular}{l r r r}
@@ -608,7 +603,9 @@ prefetching does not incur a false sharing overhead, it will leave an additional
 cache line in the CPU's cache. Another CPU might then later write to that
 cache line, incurring unnecessary coherence overhead. The additional padding
 does not prevent the prefetcher from loading the irrelevant cache line, but it
-does prevent other threads from ever writing to it.
+does prevent other threads from ever writing to it. We can think of this problem
+as false sharing of the chunks of the L2 cache's spatial prefetcher. This
+description isn't pithy, but has the advantage of being correct.
 
 An explanation for the other mysterious artifact, the modest impact of padding
 the locks, is more elusive. It seems to make sense that using a small number of
