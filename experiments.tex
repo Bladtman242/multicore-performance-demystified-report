@@ -179,6 +179,7 @@ increment as a function of the distance between the fields in memory.
 \end{Verbatim}
 	\caption{Simplified code for the local-field version of the uncontended-writes
 	experiment.}
+	\label{code:uncontended}
 \end{code}
 
 Each thread performs millions of increments. The fields are
@@ -191,15 +192,16 @@ see the performance impact in both cases.
 Since the fields are uncontended, we will assume the difference in performance
 to be a result of unnecessary coherence operations due to false sharing.
 
-In the experiments with volatile integers, each thread performs 6M increments.
-In the experiments without volatile, each thread performs 66M increments. 
-Figure \ref{fig:uncont} and \ref{fig:uncont-nob} show the average time per
-increment, as a function of padding.
+In the experiments with \java{volatile} fields, each thread performs 6M increments.
+In the experiments without \java{volatile}, each thread performs 66M increments. 
+Figure \ref{fig:uncont} and \ref{fig:uncont-nob} show the wall-clock execution
+time of the experiments, as a function of padding. Padding technique
+\ref{padding:object-array} was used for these experiments.
 
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
 \input{plots/barrier.tex}
-\caption{Uncontended increments on volatile integers. The plot shows wall-clock
+\caption{Uncontended increments on volatile integer fields. The plot shows wall-clock
 	execution time, as a function of the number of bytes used as padding
 	between the integers.}
 	\label{fig:uncont}
@@ -208,14 +210,14 @@ increment, as a function of padding.
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
 \input{plots/nobarrier.tex}
-\caption{Uncontended increments on non-volatile integers. The plot shows
+\caption{Uncontended increments on non-volatile integer fields. The plot shows
 	wall-clock execution time, as a function of the number of bytes used as padding
 	between the integers.}
 \label{fig:uncont-nob}
 \end{figure}
 
 \mynote{Add explanation of the different plots (array/local,
-barrier/no-barrier), include values of plots (plots are hard to read), and
+barrier/no-barrier), include values from plots (plots are hard to read), and
 reflect/conclude}
 
 \subsection{Contended writes}
@@ -225,7 +227,7 @@ operations to see the existence and cost of false sharing. In this section, we
 shall see that observing the performance of contended memory operations - where
 coherence overhead is strictly necessary - can be just as illustrative.
 
-\begin{code}
+\begin{code}[hbtp]
 \begin{Verbatim}[frame=single]
   int sharedInt = 0;
   let taskCount parallel tasks do {
@@ -236,9 +238,10 @@ coherence overhead is strictly necessary - can be just as illustrative.
 \end{Verbatim}
 	\caption{Simplified code for the local-field version of the contended-writes
 	experiment.}
+	\label{code:contended}
 \end{code}
 
-The program is similar to \mynote{reference uncontended snippet}, but in this
+The code, seen in snippet \ref{code:contended}, is similar to that in snippet \ref{code:uncontended}, but in this
 version all threads operate on a single, shared integer field. As in the previous
 section, we run two versions of the experiment: One where the field is
 \java{volatile}, and one where it is not. As this experiment uses a shared field,
@@ -516,7 +519,8 @@ objects are densely allocated, e.g. in a tight for-loop, they can still be
 placed back-to-back in memory.
 
 We measure the impact of false sharing by benchmarking versions with different
-amounts of padding between the locks and counters.
+amounts of padding between the locks and counters. We use padding technique
+\ref{padding:object-array-indirect} for this experiment.
 
 \begin{figure}[hbtp]
 	\centering
@@ -627,7 +631,7 @@ above, we can use optimistic concurrency to implement a lock-free version of
 the histogram.
 
 Optimistic compare-and-swap works best when the operation we perform is cheap,
-and the resource we perform it on has low contended. That way, retries will
+and the resource we perform it on has low contention. That way, retries will
 happen rarely, and be cheap when they do.
 
 The histogram problem lends itself well to a compare-and-swap based solution:
@@ -661,7 +665,8 @@ the integers are stored in a plain \java{int} array.
 To ensure atomicity and visibility of updates, the implementation relies on the
 undocumented \java{sun.misc.Unsafe} class. This strongly suggests that our
 implementation suffers from false sharing of cache lines, as the array elements
-appear to be unpadded.
+appear to be unpadded. To confirm this suspicion, we run experiments with
+padding technique \ref{padding:primitive-array-indirect}.
 
 Figures \ref{fig:histo-cas-i5}, \ref{fig:histo-cas-i7}, and
 \ref{fig:histo-cas-xeon} show that the execution time of this version of the
@@ -731,7 +736,7 @@ example: If the sub-problems are independent, they can be solved in parallel on
 a multicore system without any communication between parallel processes. Of
 course, we need to ensure that solutions are visible \textit{after} they are
 found, but no communication is needed while the threads work. This is the only
-of our experiments whare eliminating false sharing does not significantly
+of our experiments where eliminating false sharing does not significantly
 improve execution times.
 
 \begin{code}
@@ -819,6 +824,8 @@ leftmost elements of the right part. We run three experiments on each platform:
 		array, such that padding segments and data segments are of equal
 		length.
 \end{description}
+We use padding technique
+\ref{padding:primitive-array-indirect} to space the array elements.
 
 Experiments are run using an array with 4 million integers to be sorted. Padall
 and padsome experiments use a cutoff value of 16 array elements, corresponding
@@ -929,7 +936,11 @@ take 108 iterations to complete.
 \end{code}
 
 The code used for this experiment is the same as in \cite{mystery}, with small
-adaptations. We examine 4 K-means implementations:
+adaptations, e.g. to the fields used for padding. The padding technique used is
+technique \ref{padding:object-fields}. In fact, the example given for the
+technique in chapter \ref{chap:javamem} is taken from KMeans2Q64.
+
+We examine 4 K-means implementations:
 
 \begin{description}
 	\item[KMeans2P] {The unoptimized implementation described
@@ -1041,7 +1052,7 @@ is 2.1 times faster than KMeans2Q. Curiously, the execution time doesn't get as
 close to that of KMeans2P as in \citeauthor{mystery}'s experiments, even though
 both experiments use two 128-byte padding segments in the \java{Cluster} class.
 
-\subsection{Striped hashmap}
+\subsection{Striped hashmaps}
 Another problem used in the PCPP course, concurrent hashmap data structures
 provide a more interesting example of striped locking applications than the
 histogram builder we examined earlier: Hashmaps serve as general key-value
@@ -1050,7 +1061,7 @@ and writes to hashmaps are often interleaved.
 
 We consider two versions of the striped hashmap: Striped map, and striped-write
 map. Both versions are from the PCPP course, and both versions are examined in
-\cite{mystery}. Howver, \cite{mystery} examines only the striped-write map
+\cite{mystery}. However, \cite{mystery} examines only the striped-write map
 with respect to false sharing.
 
 Both implementations follow the same overall strategy: Key-value pairs are
@@ -1124,7 +1135,8 @@ three platforms, but it depends on the specific Java runtime platform.}
 
 Figures \ref{fig:hashmap-striped-i5} and \ref{fig:hashmap-striped-i7-xeon} show
 the wall-clock execution time when using the striped hashmap with different
-amounts of padding between the locks.
+amounts of padding between the locks. The locks are padded with padding
+technique \ref{padding:object-array-indirect}.
 
 \begin{code}
 \begin{Verbatim}[frame=single]
@@ -1148,7 +1160,12 @@ elements now effectively become \java{volatile}, causing a larger coherence
 overhead.
 
 Figure \ref{fig:hashmap-stripedwrite} shows the wall-clock execution time when
-using the striped-write hashmap with different amounts of padding between the locks.
+using the striped-write hashmap with different amounts of padding between the
+locks and elements of \java{sizes}. The locks are padded using padding technique
+\ref{padding:object-array-indirect}. The elements of sizes are padded by reusing the
+indirection array from the locks, this is equivalent to using padding technique
+\ref{padding:primitive-array-indirect}, but without the overhead of using the
+additional indirection array.
 
 The experiments show that false sharing has a pronounced impact on both hashmaps
 across all three platforms, as simply padding elements of shared datastructures
