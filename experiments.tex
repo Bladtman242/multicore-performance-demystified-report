@@ -3,19 +3,21 @@
 
 In this chapter we look at multiple examples of multicore programs, focusing on
 how they are affected by false sharing of cache lines. We start with a few
-slightly contrived programs, to show the extremes of false sharing overhead. We
-then move on to more practical examples such as histogram building, sorting,
-and k-means clustering.
+slightly contrived programs in section \ref{sec:contrived}, to show the extremes
+of false sharing overhead. We then move on to more practical examples such as
+histogram building, sorting, and k-means clustering in section
+\ref{sec:practical}
 
 Unless otherwise noted, experiments are run with 4, 8, and 48 threads on the i5,
-i7, and Xeon platforms, respectively.
+i7, and Xeon platforms, respectively. These numbers were chosen based on the
+experiments in the following section.
 
 \section{Platform experiments}
 Before we get into our multicore performance experiments, it is worth verifying
 some assumptions about the hardware platforms we perform them on. In the
 following sections, we first assess noise in our experiments by examining the CPU
 load when not running experiments. We then gauge our platforms' effective or
-perceived level of parallelism, by measuring how well simple tasks scale with the
+perceived degree of parallelism, by measuring how well simple tasks scale with the
 number of threads used. We finally measure the access times of the different
 levels of the cache hierarchy.
 
@@ -38,10 +40,10 @@ Figure \ref{fig:cpuload} shows the CPU load of all three platforms when no
 experiments are running.
 
 The values are given as percentages of a load that would keep all cores busy
-100\% of the time. Therefore, the Xeon platform is actually the busiest,
-despite not having the highest average. Expressing the loads as percentages of
-a load that would keep a single, virtual core busy, the loads are 0.79\%,
-0.16\%, and 4.14\% for the i5, i7, and Xeon platform respectively.
+100\% of the time. Therefore, the Xeon platform is actually the busiest, despite
+not having the highest average. Expressing the load averages as percentages of a
+load that would keep a single, virtual core busy, the loads are 0.79\%, 0.16\%,
+and 4.14\% for the i5, i7, and Xeon platform respectively.
 
 For the performance effects we wish to examine in the remainder of this report,
 this level of noise seems to be acceptable.
@@ -68,10 +70,67 @@ this level of noise seems to be acceptable.
 \end{figure}
 
 \subsection{Degrees of parallelism}
+It is not entirely clear how much work our platforms can do in parallel. We know
+how many physical cores they each have, and we know how many and virtual cores
+they each have with hyper-threading. But hyper-threading is not the same as
+having additional physical cores: Virtual cores share hardware such as caches,
+do not fully execute two threads at once. Rather, hyper-threading allows two
+threads to interleave on a single physical core, so that when one thread is
+waiting for IO, the other may perform CPU bound work, and vice-versa.
+
+To find the effective or perceived degree of parallelism our platforms support,
+we run four experiments with different load types: IO bound, CPU bound, and mixed
+load. 
+
+Each experiment runs a fixed number of iterations for each of the platforms.
+Work load is divided between evenly threads, so more threads means fewer
+iterations per thread.
+
+The experiments are:
+
+\begin{description}
+	\item [mem-reads] A memory bound experiment. Each thread reads elements
+		from an array and keeping a running sum on the stack. The array
+		is traversed in random order, and contains random integers. The
+		array size length is chosen as twice the L3 cache size for the
+		given platform. The code for this experiment is shown in code
+		snippet \ref{code:sum}. The loop runs for 40E6, 32E6, and 64E6
+		iterations on the i5, i7, and Xeon platforms respectively.
+	\item [mem-writes] The exact same as mem-reads, but the sum is written
+		back to the array in each iteration.
+		The loop runs for 30E6, 32E6, and 64E6 iterations on the i5, i7,
+		and Xeon platforms respectively.
+	\item [CPU] The CPU bound experiment, shown in code snippet
+		\ref{code:div}. Each thread performs a sequence of
+		floating-point divisions.
+		The divisor is a value greater than 1, chosen such that \java{d}
+		never becomes less than or equal to 1.
+		The loop runs for 40E6, 108E6, and 750E6 iterations on the i5,
+		i7, and Xeon platforms respectively.
+	\item [mixed] A mixed-load experiment. This experiment uses half of the
+		threads to run the mem-reads experiment, and the other half to
+		run the CPU experiment. Since the experiments divides work
+		between the threads they are allotted, the mixed experiment
+		performs twice as much work per thread as the other experiments.
+\end{description}
+
+Figures \ref{fig:parallel-i5}, \ref{fig:parallel-i7}, and
+\ref{fig:parallel-xeon}, show the wall-clock times of the four experiments on
+the i5, i7, and Xeon platforms respectively.
+
+The mixed experiment parallelises the best (remember that it divides its threads
+between the mem-reads and CPU experiments, which means that the mixed experiment
+for 2 threads performs as much work as the mem-reads and CPU experiments do
+together for 1 thread, and so forth). This agrees with our intuition of
+hyper-threading works.
+
+Across the different types of loads, we see that 4, 8, and 48 threads are good
+thread counts for the i5, i7, and Xeon platforms respectively.
 
 \begin{code}
 \begin{Verbatim}[frame=single]
   let taskCount parallel tasks do {
+    //start indexes are evenly spaced for the threads
     final int startIndex = ...;
       double sum = 0.0;
       int k = startIndex;
@@ -85,7 +144,10 @@ this level of noise seems to be acceptable.
       }
   }
 \end{Verbatim}
-	\caption{Simplified code for the memory-bound parallelism experiment.}
+	\caption{Simplified code for the memory-bound parallelism experiment.
+	The \java[indices] array contains all the indices of the \java{array}
+	array in random order.}
+	\label{code:sum}
 \end{code}
 
 \begin{code}
@@ -98,6 +160,7 @@ this level of noise seems to be acceptable.
   }
 \end{Verbatim}
 	\caption{Simplified code for the CPU-bound parallelism experiment.}
+	\label{code:div}
 \end{code}
 
 \begin{figure}[hbpt]
@@ -124,8 +187,35 @@ this level of noise seems to be acceptable.
 	\label{fig:parallel-xeon}
 \end{figure}
 
+
 \subsection{Memory hierarchy access-times}
-\begin{code}
+Here we replicate the experiment used to measure read access times in
+\cite{mystery}. Code snippet \ref{code:cyclic} shows the code for the core
+measurement loop, figure \ref{fig:readtimes} shows the results. The experiment
+performs a fixed number of memory read operations ($2^{25} =
+33.54432\mathrm{E}6$) from an array. The access pattern is determined by the
+contents of a pre-built array. The pattern is cyclic, so the number of read
+operations and the working-set size are independent of each other, and
+randomized to hinder cache prefetching. This allows us to measure the read times
+of the different levels of the memory hierarchy, by choosing working set sizes
+that are too large to fit in the smaller levels. If we e.g. wish to measure the
+access times for L2 cache, we use a working set larger than the 32KiB that will
+fit in L1, but no larger than the 256KiB that will fit in L2. The technique used
+to fill the array, thereby deciding the access pattern, is rather intricate, so
+rather than restating it here, I refer interested parties to \cite{mystery}.
+
+Results are included for an additional padded variant that uses padding
+technique \ref{padding:primitive-array-indirect}. This is intended as a
+sanity-check to ensure that each read array
+element is in its own cache line. The idea is to avoid values being cached
+because they share a cache line with previously read values. As the results
+show, this is unnecessary: The technique from \cite{mystery} already achieves
+this, as the randomized access pattern causes the previously read cache lines to
+be evicted. This is evident by the fact that the padded versions are
+approximately twice as slow as the unpadded ones, corresponding to the
+additional memory read from the indirection array used for padding.
+
+\begin{code}[h]
 \begin{Verbatim}[frame=single]
   private static double jumps(int[] arr) {
     int k = 0;
@@ -136,6 +226,7 @@ this level of noise seems to be acceptable.
   }
 \end{Verbatim}
 	\caption{Code for measuring memory access times.}
+	\label{code:cyclic}
 \end{code}
 
 \begin{figure}[hbpt]
@@ -156,8 +247,9 @@ this level of noise seems to be acceptable.
 \end{figure}
 
 \section{Multicore cache performance}
+\label{sec:contrived}
 
-To see the possible impact of false sharing, it is illustrative to look at a
+To see the impact of false sharing, it is illustrative to look at a
 few contrived example programs. In this section we look at a handful of
 variations of programs that perform simple operations in a multicore
 setting.
@@ -182,21 +274,36 @@ increment as a function of the distance between the fields in memory.
 	\label{code:uncontended}
 \end{code}
 
-Each thread performs millions of increments. The fields are
+Each thread performs integer-increment operations. The fields are
 uncontended; each thread has its own integer-field and performs no read or write
-operations to fields used by the other threads. Since each thread operates on
-its own field, there is no need for synchronization. Nonetheless, we perform
-the experiment in variants with and without \java{volatile} integer declarations, to
-see the performance impact in both cases.
+operations to fields used by the other threads. We run two variants of the
+experiment, one where the \java{Counter} instance with the integer field is kept
+in a thread-local field, and one where it is read from a shared array in each
+iteration. Since each thread operates on its own \java{Counter} instance, there
+is no data sharing between CPU cores, and hence no need for synchronization.
+Nonetheless, we perform the experiment in variants with and without
+\java{volatile} integer declarations, to see the performance impact in both
+cases.
 
 Since the fields are uncontended, we will assume the difference in performance
 to be a result of unnecessary coherence operations due to false sharing.
 
-In the experiments with \java{volatile} fields, each thread performs 6M increments.
-In the experiments without \java{volatile}, each thread performs 66M increments. 
+In the experiments with \java{volatile} fields, each thread performs 6E6
+increments.
+In the experiments without \java{volatile}, each thread performs 66E6 increments.
 Figure \ref{fig:uncont} and \ref{fig:uncont-nob} show the wall-clock execution
 time of the experiments, as a function of padding. Padding technique
-\ref{padding:object-array} was used for these experiments.
+\ref{padding:object-array} was used for these experiments. The values chosen for
+the amounts of padding are a little odd. This is due to a bug in the padding
+code that was discovered late in the project.
+
+The results show significant overhead from false sharing. With volatile
+fields, padding reduces execution time by  78-94\%.
+With non-volatile fields, padding reduces execution time by 86-94\%, but only
+for the array versions. For the local versions with non-volatile fields, padding
+reduces execution time by only 12-19\%. The threads never write to the array,
+only to the integer fields of the objects pointed to by the array elements, so
+no explanation for this behaviour presents itself.
 
 \begin{figure}[hbpt]
 \graphicspath{{plots/}}
@@ -215,10 +322,6 @@ time of the experiments, as a function of padding. Padding technique
 	between the integers.}
 \label{fig:uncont-nob}
 \end{figure}
-
-\mynote{Add explanation of the different plots (array/local,
-barrier/no-barrier), include values from plots (plots are hard to read), and
-reflect/conclude}
 
 \subsection{Contended writes}
 
@@ -250,22 +353,40 @@ single-element array are included, to show that the behaviour is not
 significantly affected by this change.
 
 An additional experiment is included here, running an additional thread that
-only reads the integer field. This allows us to see that, perhaps contrary to
-intuition, read operations in a multicore setting also incur a coherency
-overhead.
-
-\mynote{include getter/stop code snippet}
+only reads the integer field. This experiment is the exact same as described in
+code snippet \ref{code:contended}, except that when it runs with e.g. four
+threads, there is an additional fifth thread running that only performs reads.
+This allows us to see that, perhaps contrary to intuition, read operations in a
+multicore setting also incur a coherency overhead.
 
 We need the reading thread to run for the full duration of the experiment. To
 that end, the thread does not perform a predetermined number of operations, but
 is started before the others, and terminated only when the others are
 finished. This incurs an overhead, as the thread needs to be stopped before the
-benchmark finishes! However, an additional experiment has shown that the time it
-takes to stop a thread is far too small to significantly skew our results.
+benchmark finishes! However, an additional experiment shows that the time it
+takes to stop a thread is far too small to significantly skew our results:
 
-\mynote{include table of numbers (they are 833.4$\pm$2.82 (desktop),
-1940.5$\pm$58.12 (server),
-and 1256.7$\pm$13.59 (laptop) ns)})
+The experiments with a volatile field runs 20E6 iterations of the loop;
+the experiments with a non-volatile field runs 200E6 iterations of the loop.
+
+\begin{figure}[hbtp]
+	\centering
+	\begin{tabular}{l r r}
+		\hline
+		\hline
+		Platform & Time (ns) & SD (\%) \\
+		\hline
+		i5 &  833.4 & 0.33\\
+		i7 & 1940.5 & 3.00\\
+		Xeon & 1256.7 & 1.08\\
+		\hline
+		\hline
+	\end{tabular}
+	\caption{Wall-clock time for for stopping a thread. Time is the total
+	wall-clock execution time, the standard deviation (SD) is given in
+	percent of the execution time.}
+	\label{table:stop-thread}
+\end{figure}
 
 \begin{figure}[hbpt]
 	\graphicspath{{plots/}}
@@ -282,7 +403,7 @@ and 1256.7$\pm$13.59 (laptop) ns)})
 		\caption{Xeon}
 	\end{subfigure}
 	\caption{Contended increments on \textbf{volatile} integers. The plots show
-	nanoseconds per increment, as a function of the thread count.
+	wall-clock execution time in nanoseconds, as a function of the thread count.
 	Please note that both axes vary across the plots.}
 	\label{fig:cont}
 \end{figure}
@@ -302,30 +423,47 @@ and 1256.7$\pm$13.59 (laptop) ns)})
 		\caption{Xeon}
 	\end{subfigure}
 	\caption{Contended increments on \textbf{non-volatile} integers. The
-	plots show nanoseconds per increment, as a function of the number of
+	plots show wall-clock execution time in nanoseconds, as a function of the number of
 	threads. Please note that both axes vary across the plots.}
 	\label{fig:cont-nob}
 \end{figure}
 
-\mynote{include plots as ns-per-operation, concrete numbers/factors, and
-discussion/conclusion on the results, concrete parameters: work not divided..}
+The results, shown in figures \ref{fig:cont} and \ref{fig:cont-nob} show that
+memory reads can have a notable performance impact. Both with and without the
+\java{volatile} field declaration, we see that adding the additional reading
+thread generally increases execution time. In this respect, the plots can only
+really be trusted up to about 3, 8 and 48 threads on the i5, i7, and Xeon
+platforms, as this about the degree of parallelism we can expect, as shown in
+the parallelism experiments previously. With volatile fields, running one
+writing and one reading thread takes 3.27-3.97 times as long as running a single
+writing thread. Running two writing threads is, of course, even slower, but it
+is a significant slowdown from something we might intuitively expect to have no
+additional cost. It seems the extra cache invalidations needed to maintain cache
+coherence are the culprits. Without the \java{volatile} field declaration,
+running one writing and one reading thread takes 14\% longer on the i5 platform,
+and 5\% longer on the i7 platform. On the Xeon platform, the additional reading
+thread makes the experiment run 0.6\% faster. This is likely just noise. It is
+not clear why reading from an array is faster than reading from a field on the
+i5 platform.
 
-\mynote{Konklusioner: Læsning er ikke gratis(!), pris for contended writes (både
-med og uden barrier/volatile) siger en del om MESI pris (1 vs 2 tråde er
-illustrativt), indikerer (løst) pris af at smide en cache-line frem og tilbage
-mellem kerner}
-
+Just as the extra cost of the writing thread is interesting, it it interesting
+to see the cost of additional writing threads. On the i5, i7, and Xeon
+platforms, running with two writing threads is 10.48, 8.19, and 8.06 times
+slower than running with a single writing thread. This loosely illustrates the
+cost of passing cache lines back and forth between two cores: 70.00, 34.39, and
+46.50 nanoseconds per increment on average.
 
 \section{Practical applications}
-While incrementing counters is useful, it is thankfully not the only thing we
+\label{sec:practical}
+While incrementing counters can be useful, it is thankfully not the only thing we
 build software for.
-In this section we examine false sharing in 4 examples of more complicated
+In this section we examine false sharing in 4 examples of more practical
 parallel programs.
 
 First we will look at several programs that build histograms. These example
 programs will motivate our approach from coarse- to fine-grained synchronization
 with padding. One implementation also serves as an example of false sharing in
-lock-free compare-and-swap based applications. We then use Quicksort as an example of the
+lock-free application based on optimistic concurrency with compare-and-swap. We then use Quicksort as an example of the
 divide and conquer paradigm, where the division of subproblems limit the need
 for synchronization.
 As examples of locking applications, we examine an implementation of k-means
@@ -346,7 +484,7 @@ sequence into a number of equal-sized sections, one for each thread. For each
 element $a$ in its section, have each thread atomically increment a global
 counter (or bucket) representing the frequency of $a$.
 
-All the implementations we consider follow this basic formulation; they differ
+Except for the first, all the implementations we consider follow this basic formulation; they differ
 only in how they ensure that the increment operations are atomic. We need to
 ensure atomicity because the numbers in the input sequence may appear multiple
 times, and in different segments, making it possible for more than a single
@@ -418,8 +556,7 @@ also scales relatively well with the number of cores.
 \subsubsection{Coarse-grained locking}
 When it comes to locking implementations, the simplest solution is for the
 threads to take a single, shared lock anytime they increment a frequency
-counter. This solution is slow. Only reading from the input sequence is
-parallelised. At any time, only one thread can be incrementing a counter.
+counter. This solution is slow. At any time, only one thread can be incrementing a counter.
 
 \begin{code}
 \begin{Verbatim}[frame=single]
@@ -465,7 +602,8 @@ counter0 and counter1 are in the same cache line:
 	\item CPU0 updates counter 0. The cache line is left in CPU0's cache.
 	\item \label{list:invalidation} CPU1 updates counter 1. The cache line is invalidated in CPU0's
 		cache.
-	\item \label{list:unneededread} CPU0 updates counter 0. The counter is not in CPU0's cache, and
+	\item \label{list:unneededread} CPU0 updates counter 0. The counter is
+		invalid in CPU0's cache, and
 		must be read from CPU1's cache instead.
 \end{enumerate}
 
@@ -483,9 +621,9 @@ this is unnecessary.
 \subsubsection{Fine-grained locking}
 \label{sec:fine-grained-histo}
 A better solution is to have different counters guarded by different locks. This
-way, threads can perform all their work in parallel, except when different
+way, threads can perform their work in parallel, except when different
 threads work on counters guarded by the same lock. For practical applications
-the ideal level of granularity should be determined by experiment. In this
+the ideal degree of granularity should be determined by experiment. In this
 experiment I use 32 locks: One lock for each bucket.
 
 \begin{code}
@@ -508,7 +646,8 @@ experiment I use 32 locks: One lock for each bucket.
 The improved level of parallelism increases the possibility for false sharing: In
 the previous version only one thread could perform writes at a time. In this
 version, threads holding different locks can in theory spend arbitrary amounts
-of time invalidating each other's cache lines without doing any actual work.
+of time invalidating each other's cache lines without doing actually
+incrementing the counterss.
 
 There are two clear candidates for false sharing: The locks and the counters.
 Neither are stored directly in the arrays: Locks must be object types, and are
@@ -545,10 +684,10 @@ amounts of padding between the locks and counters. We use padding technique
 
 Figures \ref{fig:histo-local-i5}, \ref{fig:histo-local-i7}, and
 \ref{fig:histo-local-xeon} show the wall-clock execution times using different
-amounts of padding for the i5, i7, and Xeon platforms respectively. Each smaller
+amounts of padding for the i5, i7, and Xeon platforms respectively. Each of the smaller
 plot shows the execution time of the histogram builder, as a function of the
 amount of padding between the counters. The third axis -- the amount of padding
-between the locks -- is unrolled into different plots.
+between the locks -- is unrolled into the different plots.
 
 The table in figure \ref{table:hist-local} compares the unpadded times with the
 best times for each platform.
@@ -581,8 +720,8 @@ this limitation, which is what we are concerned with.
 It is not surprising that the platform with the most cores suffers the worst.
 The more threads running in parallel, the bigger the likelihood of invalidating
 a cache line that is relevant to another core. Furthermore, the invalidation
-messages must be sent to all the other cores, and processors must wait for
-acknowledgement messages from all the cores, so there is a lot more
+messages must be sent to all the other cores. Processors must wait for
+acknowledgement messages from all the other cores, so there is a lot more
 communication occurring due the coherence protocol. The larger cache hierarchy
 likely also means larger physical distances, which in turns makes communication
 slower.
@@ -594,7 +733,7 @@ has such a modest impact.
 
 We would expect the performance to stop improving abruptly around 64
 bytes, as that is the cache line size used by our hardware architectures.
-One explanation for the continued improvements is the cache prefetch mechanism.
+One possible explanation for the continued improvements is the cache prefetch mechanism.
 It is possible that the prefetch mechanism causes more than a single cache line
 to be fetched. This is the explanation given for why the \java{@Contended}
 annotation causes 128 bytes of padding to inserted on OpenJDK, under the
@@ -608,8 +747,7 @@ cache line in the CPU's cache. Another CPU might then later write to that
 cache line, incurring unnecessary coherence overhead. The additional padding
 does not prevent the prefetcher from loading the irrelevant cache line, but it
 does prevent other threads from ever writing to it. We can think of this problem
-as false sharing of the chunks of the L2 cache's spatial prefetcher. This
-description isn't pithy, but has the advantage of being correct.
+as false sharing of the chunks of the L2 cache's spatial prefetcher.
 
 An explanation for the other mysterious artifact, the modest impact of padding
 the locks, is more elusive. It seems to make sense that using a small number of
@@ -626,8 +764,8 @@ to apply to those that succeed it as well.}
 \input{histo-plots.tex}
 
 \subsubsection{Compare-and-swap}
-Following the same strategy as the fine-grained locking version implementation
-above, we can use optimistic concurrency to implement a lock-free version of
+Following the same strategy as the fine-grained locking implementation
+, we can use optimistic concurrency to implement a lock-free version of
 the histogram.
 
 Optimistic compare-and-swap works best when the operation we perform is cheap,
@@ -636,7 +774,7 @@ happen rarely, and be cheap when they do.
 
 The histogram problem lends itself well to a compare-and-swap based solution:
 All writes to shared data are the results of simple increment operations, which
-are fast. Resource contention depends on the ratio of locks to threads, and the
+are fast. Resource contention depends on the ratio of counters to threads, and the
 order of the input.
 
 \begin{code}
@@ -656,7 +794,7 @@ order of the input.
 
 Code snippet \ref{code:histo-cas} outlines the compare-and-swap implementation
 of the histogram builder. It uses Java's \java{AtomicIntegerArray} class to
-hold counters. The \java{getAndIncrement} method performs the compare-and-swap
+hold counters. The \java{getAndIncrement} method performs the atomic compare-and-swap
 operation, and guarantees that updates are visible.
 
 Reading the source code for the OpenJDK implementation of the
@@ -665,7 +803,7 @@ the integers are stored in a plain \java{int} array.
 To ensure atomicity and visibility of updates, the implementation relies on the
 undocumented \java{sun.misc.Unsafe} class. This strongly suggests that our
 implementation suffers from false sharing of cache lines, as the array elements
-appear to be unpadded. To confirm this suspicion, we run experiments with
+appear to be densely allocated. To confirm this suspicion, we run experiments with
 padding technique \ref{padding:primitive-array-indirect}.
 
 Figures \ref{fig:histo-cas-i5}, \ref{fig:histo-cas-i7}, and
@@ -842,10 +980,12 @@ accesses at most 2 cache-lines that are falsely shared with other threads. An
 additional two cache lines per task may be subject
 to false invalidations due to the L2 prefetcher, as explained in
 section \ref{sec:fine-grained-histo}. Each task writes to each of their array
-elements at most once, either in the partitioning step, or when performing
-Selection sort, so the shared cache lines suffer little contention, if any.
-Finally, nothing guarantees visibility of updates before a task has finished, so
-we do not suffer the full overhead of the cache coherence protocol.
+elements at most once in the partitioning step. When performing
+Selection sort, each task performs up to $\frac{16\cdot17}{2} = 136$ writes, but all
+within the same 64-byte memory segment, so at most 2 cache lines are involved.
+As a result, the shared cache lines suffer contention, if any. Finally, nothing
+guarantees visibility of updates before a task has finished, so we do not suffer
+the full overhead of the cache coherence protocol.
 
 The fact that we see slight improvement from padding in the padsome experiments
 might simply be noise, but it leads us to a new question. The experiments are
@@ -855,6 +995,11 @@ where the array will be divided beforehand, but perhaps other divide-and-conquer
 algorithms, such as Mergesort, could benefit more from eliminating false
 sharing, simply because we could add padding only in positions where the input
 array gets split.
+
+The plots show a high standard variations for some amounts of padding. On the
+Xeon platform in particular, the values for the padall experiment are highly
+unreliable. This may indicate that there is something wrong with my benchmarks,
+or that there is otherwise something more than meets the eye here.
 
 \subsection{K-means}
 The K-means problem from the 2017 PCPP exam -- the original inspiration for
@@ -956,16 +1101,16 @@ We examine 4 K-means implementations:
 
 The most significant false sharing overhead comes from the \java{sumx},
 \java{sumy}, \java{count}, and \java{mean} fields in the \java{Cluster}
-class (Hereinafter, we shall refer to these the former three of these fields as
+class (Hereinafter, we shall refer to the former three of these fields as
 the \textit{assignment fields}). To see the problem, we need to understand just
 3 points:
 
 \begin{enumerate}
 	\item{Updates to the assignment and \java{mean} fields
-		are guarded by a lock (the surrounding \java{Cluster} instance),
-		and the \java{mean} field is declared \java{volatile}}. This
-		means that the fields are subject to the cache coherence
-		protocol: Writes to these fields will result in invalidation
+		are subject to the cache coherence protocol:
+		They are guarded by a lock (the surrounding \java{Cluster} instance),
+		and the \java{mean} field is declared \java{volatile}}.
+		Writes to these fields will result in invalidation
 		messages being sent to the other cores. Reads from \java{mean}
 		will force the CPU core to process pending invalidations, which
 		may result in later cache misses.
@@ -973,13 +1118,13 @@ the \textit{assignment fields}). To see the problem, we need to understand just
 		assignment fields. The fields consist of an object pointer, two
 		\java{doubles} and an \java{int}, taking up a total of 28
 		bytes. The small memory footprint even makes it possible for
-		two separate \java{Cluster} instances to have fields in the same
-		cache line!}
+		fields in two separate \java{Cluster} to share a cache
+		line!}
 	\item {Every call to the \java{closest} method reads the \java{mean}
 		fields of \textit{every cluster}. Calls to the \java{closest}
 		and \java{addToMean} methods are interleaved in KMeans2Q, which
 		means writes to the assignment fields happen concurrently with
-		reads from the \java{volatile mean} field.}
+		a lot of reads from the \java{volatile mean} field.}
 \end{enumerate}
 
 This means that every write to the assignment fields runs the risk of causing
@@ -1054,7 +1199,7 @@ both experiments use two 128-byte padding segments in the \java{Cluster} class.
 
 \subsection{Striped hashmaps}
 Another problem used in the PCPP course, concurrent hashmap data structures
-provide a more interesting example of striped locking applications than the
+provide a more complex example of striped locking applications than the
 histogram builder we examined earlier: Hashmaps serve as general key-value
 stores, their sizes may change dynamically, and unlike histograms, reads
 and writes to hashmaps are often interleaved.
@@ -1077,7 +1222,8 @@ satisfaction of completing them. The full implementations are fairly intricate,
 but to see the risk of false sharing overhead, we need only consider the data
 structures they use internally.
 
-We use a quasi thread-local counter as the stress pattern for our hashmap
+Inspired by the \java{java.util.concurrent.atomic.LoncAdder}
+class\footnotemark{}, we use a quasi thread-local counter as the stress pattern for our hashmap
 experiments. Each thread reads its own segment of the input, and stores the sum
 of the inputs in a shared hashmap. Each thread uses a unique thread-id as key
 for its own counter. Whether the counters are effectively thread-local depends
@@ -1085,6 +1231,10 @@ on whether the thread-ids hash to buckets in the same stripe.
 Experiments are run with 32 stripes on all platforms, regardless of thread
 count. The input sequence consists of 33 million integers, divided evenly
 between threads.
+
+\footnotetext{While the LongAdder class ostensibly works in the same way as this
+experiment, it does not use a hashmap to store the counters, and uses an
+intricate optimistic concurrency scheme for updates.}
 
 \begin{code}
 \begin{Verbatim}[frame=single]
@@ -1126,9 +1276,7 @@ up to four locks in a single 64-byte cache line. Taking or releasing a lock can
 then falsely invalidate three other locks in the caches of other CPU cores.
 
 The \java{buckets} and \java{sizes} fields are also candidates for false
-sharing, but are unlikely to cause significant overhead: Writes and reads to
-these fields are protected by locks, so the contention of these fields is
-bounded, and likely overshadowed, by the contention of the locks.
+sharing, but are unlikely to cause significant overhead.
 
 \footnotetext{In chapter \ref{chap:javamem}, we saw that this is the case on our
 three platforms, but it depends on the specific Java runtime platform.}
@@ -1163,7 +1311,7 @@ Figure \ref{fig:hashmap-stripedwrite} shows the wall-clock execution time when
 using the striped-write hashmap with different amounts of padding between the
 locks and elements of \java{sizes}. The locks are padded using padding technique
 \ref{padding:object-array-indirect}. The elements of sizes are padded by reusing the
-indirection array from the locks, this is equivalent to using padding technique
+indirection array from the locks. This is equivalent to using padding technique
 \ref{padding:primitive-array-indirect}, but without the overhead of using the
 additional indirection array.
 

@@ -2,37 +2,37 @@
 \label{chap:busyness}
 
 False sharing is closely tied to the performance the memory hierarchy.
-It is true that false sharing can cause addition CPU-bound work due to retires
+It is true that false sharing can cause additional CPU-bound work due to retries
 when using optimistic concurrency, but false sharing overhead is itself purely
 IO bound. It is easy for software designers to overlook IO performance. Perhaps
 it is easier to develop an intuition for the cost of arithmetic instructions
-than of memory instructions. It is not just software designers however. Between
-2005 and 2010 the world was obsessed with FLOPS (floating point operations per
-second) as a performance metric. As we will see in chapter
+than for the cost of memory instructions. It is not just software designers
+however. Between 2005 and 2010 the world was obsessed with FLOPS (floating point
+operations per second) as a performance metric. As we will see in chapter
 \ref{chap:experiments}, a simple read-increment-write sequence with memory
 barriers can take several nanoseconds --- or it can take hundredths to thousands
 of nanoseconds if the cache line is contended. Given the high cost and
-importance of memory operations, especially on multicore systems, we should
-let memory operations be the new FLOPS, in terms comparing the
-performance of machine architectures.
+importance of memory operations, especially on multicore systems, we should let
+memory operations be the new FLOPS, in terms comparing the performance of
+machine architectures.
 
 As stated previously, "cache-friendliness" takes a new meaning in multicore
 software. Sequential programs benefit from data being close together in memory:
 CPU caches opt to prefetch memory locations that are close to already requested
-ones. Additionally, the L1 prefetchers will only prefetch data within the same
-4KiB page as the instruction that cases a load \cite{inteloptimize}. When the
-caches data that is not needed by a sequential program, the overhead is
-minimal. Multicore programs benefit from the same cache mechanisms as sequential
-ones, except that sharing data between CPU cores is expensive. When the caches
-cause data segments to be shared between cores unnecessarily, the performance
-impact can be considerable.
+ones; and data is cached a full cache line at a time. Additionally, the L1
+prefetchers will only prefetch data within the same 4KiB page as the instruction
+that cases a load \cite{inteloptimize}. When the caches cache data that is not
+needed by a sequential program, the overhead is minimal. Multicore programs
+benefit from the same cache mechanisms as sequential ones, except that sharing
+data between CPU cores is expensive. When the caches cause data segments to be
+shared between cores unnecessarily, the performance loss can be considerable.
 
 Without using benchmarks or hardware simulations, memory related performance
 problems can be hard to notice and diagnose. Figure \ref{table:timewaste} lists
-a couple of different ways CPUs can waste time, and the CPU load will look as a
+a couple of different ways CPUs can waste time, and how the CPU load will look as a
 result. As we can see, the busy-time of a thread or CPU says very little about
 the usefulness or necessity of the work it performs. All of the situations in
-the table, except perhaps for the last, can be caused or aggravated by false
+the table, except perhaps for the last one, can be caused or aggravated by false
 sharing of cache lines or similar problems. And yet, the resulting behaviours
 differ wildly. The exception is cache interference and unpredictable cache
 accesses. They have different causes, but are difficult to tell apart because
@@ -47,7 +47,7 @@ Cause & Effect & Thread/CPU behaviour \\
 \hline
 Lock contention & Threads wait for the lock & Idle \\
 \hline
-Optimistic compare-and-swap, repeated tries & repeatedly undoes each others work
+Optimistic compare-and-swap, repeated tries & repeatedly undoes each others' work
 & Busy \\
 \hline
 Cache interference (e.g. from false sharing)& Cache thrashing with

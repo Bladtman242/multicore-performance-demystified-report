@@ -24,21 +24,24 @@ set output "nobarrier.tex"
 unset size
 set key on
 set yrange [0:]
-plot '../accepted-results/x1/intcounters-4threads/counters-no-barrier-local' using 2:3:5:xticlabels(2) with errorlines title "i5-local", \
-     '../accepted-results/x1/intcounters-4threads/counters-no-barrier-array' using 2:3:5 with errorlines title "i5-array", \
-     '../accepted-results/itu-desktop/intcounters-8threads/counters-no-barrier-local-desktop' using 2:3:5 with errorlines title "i7-local", \
-     '../accepted-results/itu-desktop/intcounters-8threads/counters-no-barrier-array-desktop' using 2:3:5 with errorlines title "i7-array", \
-     '../accepted-results/itu-server/intcounters-48threads/counters-no-barrier-local-server' using 2:3:5 with errorlines title "xeon-local", \
-     '../accepted-results/itu-server/intcounters-48threads/counters-no-barrier-array-server' using 2:3:5 with errorlines title "xeon-array"
+set xtics ("0" 0, "8" 8, "24" 24, "80" 80)
+
+xcorrect(x)=(x*x)/4+x
+plot '< head -n4 ../accepted-results/x1/intcounters-4threads/counters-no-barrier-local' using (xcorrect($2)):3:5 with errorlines title "i5-local", \
+     '< head -n4 ../accepted-results/x1/intcounters-4threads/counters-no-barrier-array' using (xcorrect($2)):3:5 with errorlines title "i5-array", \
+     '< head -n4 ../accepted-results/itu-desktop/intcounters-8threads/counters-no-barrier-local-desktop' using (xcorrect($2)):3:5 with errorlines title "i7-local", \
+     '< head -n4 ../accepted-results/itu-desktop/intcounters-8threads/counters-no-barrier-array-desktop' using (xcorrect($2)):3:5 with errorlines title "i7-array", \
+     '< head -n4 ../accepted-results/itu-server/intcounters-48threads/counters-no-barrier-local-server' using (xcorrect($2)):3:5 with errorlines title "xeon-local", \
+     '< head -n4 ../accepted-results/itu-server/intcounters-48threads/counters-no-barrier-array-server' using (xcorrect($2)):3:5 with errorlines title "xeon-array"
 
 set output "barrier.tex"
 set yrange [0:]
-plot '../accepted-results/x1/intcounters-4threads/counters-barrier-local' using 2:3:5:xticlabels(2) with errorlines title "i5-local", \
-     '../accepted-results/x1/intcounters-4threads/counters-barrier-array' using 2:3:5 with errorlines title "i5-array", \
-     '../accepted-results/itu-desktop/intcounters-8threads/counters-barrier-local-desktop' using 2:3:5 with errorlines title "i7-local", \
-     '../accepted-results/itu-desktop/intcounters-8threads/counters-barrier-array-desktop' using 2:3:5 with errorlines title "i7-array", \
-     '../accepted-results/itu-server/intcounters-48threads/counters-barrier-local-server' using 2:3:5 with errorlines title "xeon-local", \
-     '../accepted-results/itu-server/intcounters-48threads/counters-barrier-array-server' using 2:3:5 with errorlines title "xeon-array"
+plot '< head -n4 ../accepted-results/x1/intcounters-4threads/counters-barrier-local' using (xcorrect($2)):3:5 with errorlines title "i5-local", \
+     '< head -n4 ../accepted-results/x1/intcounters-4threads/counters-barrier-array' using (xcorrect($2)):3:5 with errorlines title "i5-array", \
+     '< head -n4 ../accepted-results/itu-desktop/intcounters-8threads/counters-barrier-local-desktop' using (xcorrect($2)):3:5 with errorlines title "i7-local", \
+     '< head -n4 ../accepted-results/itu-desktop/intcounters-8threads/counters-barrier-array-desktop' using (xcorrect($2)):3:5 with errorlines title "i7-array", \
+     '< head -n4 ../accepted-results/itu-server/intcounters-48threads/counters-barrier-local-server' using (xcorrect($2)):3:5 with errorlines title "xeon-local", \
+     '< head -n4 ../accepted-results/itu-server/intcounters-48threads/counters-barrier-array-server' using (xcorrect($2)):3:5 with errorlines title "xeon-array"
 
 set output "qsort.tex"
 set yrange [0:]
@@ -122,13 +125,13 @@ set output "sharedintbarrier.tex"
 set size 0.5,0.5
 set key off
 set yrange [0:]
-plot '../accepted-results/x1/contended-writes/contended-writes-with-barriers' using 2:3:5:xticlabels(2) with errorlines title "writes-barriers", \
-     '../accepted-results/x1/contended-writes/contended-writes-and-reads-with-barriers' using 2:3:5 with errorlines title "writes-and-reads-barriers"
+plot '../accepted-results/x1/contended-writes/contended-writes-with-barriers' using 2:3:5:xticlabels(2) with errorlines title "writes-volatile", \
+     '../accepted-results/x1/contended-writes/contended-writes-and-reads-with-barriers' using 2:3:5 with errorlines title "writes-and-reads-volatile"
 
 set output "sharedintbarrierdesktop.tex"
 set yrange [0:]
-plot '../accepted-results/itu-desktop/contended-writes/contended-writes-with-barriers-desktop' using 2:3:5:xticlabels(2) with errorlines title "writes-barriers-desktop", \
-     '../accepted-results/itu-desktop/contended-writes/contended-writes-and-reads-with-barriers-desktop' using 2:3:5 with errorlines title "writes-and-reads-barriers-desktop"
+plot '../accepted-results/itu-desktop/contended-writes/contended-writes-with-barriers-desktop' using 2:3:5:xticlabels(2) with errorlines title "writes-volatile-desktop", \
+     '../accepted-results/itu-desktop/contended-writes/contended-writes-and-reads-with-barriers-desktop' using 2:3:5 with errorlines title "writes-and-reads-volatile-desktop"
 
 set output "sharedintbarrierserver.tex"
 set size 1,0.5

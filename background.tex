@@ -4,8 +4,8 @@ In this chapter we look over previous work that this report builds on. We first
 look at work that addresses false sharing specifically, then we move on to works
 describing multicore hardware and multicore software design in general.
 
-In his paper \cite{mystery} from \citeyear{mystery}, \citeauthor{mystery} brings
-to attention the curious effects of false sharing of CPU cache-lines on a Java
+In his paper from \citeyear{mystery} \cite{mystery}, \citeauthor{mystery} brings
+to attention the curious effects of false sharing of cache-lines on a Java
 runtime platform. Using a k-means clustering implementation as example, he shows
 how a seemingly obvious optimization (loop fusion) makes the program 7.7 times
 slower in practice. That data-locality can affect performance is not surprising.
@@ -17,11 +17,11 @@ significant when locking on elements in an array, even though the individual
 locks are uncontended. He subsequently shows that lock-striping implementations
 of concurrent hashmaps can suffer greatly from false sharing.
 
-While the difference in cache-behaviour between sequential and parallel programs
+While the difference in cache-behaviour between sequential and multicore programs
 is confusing and unintuitive, it is not something new. In \citeyear{eggersbus},
 \citeauthor{eggersbus} showed that CPU bus traffic as well as cache-miss
 rates and trends differ between sequential (they use the term "uniprocessor")
-programs and parallel programs \cite{eggersbus}.
+programs and multicore programs \cite{eggersbus}.
 They analyze cache behaviour for a small suite of programs, distinguishing
 between applications with high and low per-processor data locality\footnote{They
 define programs having high per-processor data locality as programs that perform
@@ -104,7 +104,7 @@ They wish to find a definition that:
 		false sharing. Hence it never grows as data is split over
 		coherence blocks.
 	\item Allows the properties of false sharing to be stated and proven as
-		mathematical theorems, and
+		mathematical theorems.
 	\item Is practically measurable for real programs.
 \end{itemize}
 
@@ -133,7 +133,6 @@ goal: Avoiding performance pitfalls. That is, we wish to improve the execution
 time of our programs where possible, so if an optimization increases execution
 time in spite of reducing false sharing, we do not consider it an optimization.
 
-\mynote{I haven't actually described bolosky and scotts methods yet}
 
 In his paper from \citeyear{mckenny-barriers} \cite{mckenny-barriers}, \citeauthor{mckenny-barriers}
 describes cache coherence behaviours and memory barriers using detailed
@@ -144,29 +143,29 @@ does not explicitly deal with false sharing, but lays the foundation for
 understanding it from a hardware perspective. In his book, \textit{Is Parallel
 Programming Hard, And, If So, What Can You Do About It?}\cite{mckenney},
 \citeauthor{mckenney} goes into much more detail with the design of CPUs as well
-as thethe memory hierarchy. Unlike the \citeyear{mckenny-barriers} paper, the
+as the memory hierarchy. Unlike the \citeyear{mckenny-barriers} paper, the
 focus of the book is software design, and several design patterns for multicore
 software are discussed, in addition to formal verification methods for multicore
 software. The book mentions and describes false sharing, but for the most part
 assumes the reader will know how to avoid it (the target audience appears to
-software designers experienced with non-parallel C programming).
+be software designers experienced with sequential C programming).
 
-In \textit{What Every Programmer Should Know About Memory},
-\citeauthor{whatprogrammersshouldknow} \cite{whatprogrammersshouldknow} focuses
+In \textit{What Every Programmer Should Know About Memory}
+\cite{whatprogrammersshouldknow}, \citeauthor{whatprogrammersshouldknow} focuses
 on both modern and historical designs used in the memory hierarchy.
 \citeauthor{whatprogrammersshouldknow} describes different types of caches, in
-enough details to understand the performance characteristics of false sharing of
+enough detail to understand the performance characteristics of false sharing of
 cache lines, as well as other unfortunate memory access patterns.
 
-An authoritative work on hardware architecture, \textit{Computer Architecture,
-Sixth Edition: A Quantitative Approach} \cite{quantarch} describes false
-sharing. The fourth, fifth and sixth editions go a little further into analysing
-false sharing overhead, but the book does not go into detail on how to avoid it.
+An authoritative work on hardware architecture, \textit{Computer Architecture:
+A Quantitative Approach} \cite{quantarch} describes false sharing. The fourth,
+fifth and sixth editions go a little further into analysing false sharing
+overhead, but the book does not go into detail on how to avoid it.
 
-\textit{Concurrent Programming in Java. Second Edition: Design Principles and
-Patterns} by \citeauthor{lea} describes multicore programming in Java.
-In his book, \citeauthor{lea} describes the Java concurrency primitives
-available to the programmer, and the visibility and ordering effects that are
-guaranteed by the Java language specification. He briefly describes how object
-oriented design differs between sequential and parallel programs, and suggests
-several patterns for thread safe object oriented design.
+\textit{Concurrent Programming in Java: Design Principles and Patterns} by
+\citeauthor{lea} describes multicore programming in Java. \citeauthor{lea}
+describes the Java concurrency primitives available to the programmer, and the
+visibility and ordering effects that are guaranteed by the Java language
+specification. He briefly describes how object oriented design differs when
+writing sequential vs. multicore programs, and suggests several patterns for
+thread safe object oriented design.

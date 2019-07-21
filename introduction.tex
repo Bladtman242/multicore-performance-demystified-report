@@ -1,9 +1,9 @@
 \chapter{Abstract}
-With this report, I provide further evidence that false sharing of cache lines
+With this report, I add to the evidence that false sharing of cache lines
 can significantly harm the performance of practical multicore software running
 on managed platforms. I describe the mechanisms of hardware caches that cause
-false sharing overhead, and relate them to Java's concurrency constructs. I
-describe techniques to manipulate the memory layout in Java programs and improve
+false sharing overhead, and relate them to Java's synchronization constructs. I
+describe techniques to manipulate the memory layout of Java programs and improve
 multicore cache performance, all within the programming model afforded to us by
 Java. I verify by experiment that these techniques work, and that the
 performance impact they have can be considerable.
@@ -19,21 +19,20 @@ mind-boggling complexities of the hardware our programs run on, in favour of
 simpler abstractions that make it easier (or even feasible) to design and
 understand complex software systems. Even with low-level languages, entire
 hardware components are abstracted away: In the x86-64 instruction set for
-example, the CPU cache is essentially invisible to the programmer except for a
+example, the CPU cache is essentially invisible to the programmer, except for a
 few prefetch instructions. 
 To see the scale of
 complexity we are talking about, consider that Intel's first i3, i5, and i7
 architectures had 810 million transistors, almost three times as many as their
 Core 2 duo processors from just 2 years earlier \cite{plc}. Present-day
-commodity Intel architectures have transistor counts in the billions. With
-respect to both physical memory layout and discrete logic circuitry, that is a
+Intel architectures have transistor counts in the billions. That is a
 lot of hardware that we do not want to have to worry about the details of.
+
 If we accept the adage that "the purpose of abstracting is not to be vague, but
 to create a new semantic level in which one can be absolutely
 precise"\cite{dijkstra}, it is easy to appreciate the work of those who hide
 away the complexities of computer hardware, allowing us to focus on more
 high-level problems in our software design.
-
 However, such abstractions can betray the unsuspecting software designer, whose
 understanding of the hardware they use is clouded by the abstractions they use
 it through.
@@ -47,16 +46,21 @@ optimization makes the program 7.7 times slower in practice.
 The aim of this report is to demystify multicore performance and help eliminate
 false sharing overhead. We achieve this through mechanical sympathy. We see that
 cache-friendly design in multicore programming is radically different from
-cache-friendly design in single-core programming. Having learned about cache
-coherence protocols, we try to bridge the gap between how we think about memory
-hardware, and how we think about memory in Java. Finally, we perform experiments
-with 6 different multicore programs on three different platforms to reinforce our
-understanding of multicore performance in Java.
+cache-friendly design in single-core programming. With this understanding of
+cache coherence protocols, we try to bridge the gap between understanding
+memory hardware, and using it in Java programs. Finally, we run
+benchmarks of 6 different multicore programs on three different platforms to
+reinforce our understanding of multicore performance in Java.
 
-The intended audience is the graduate- or post-graduate level software designer
-who is used to working on high-level, managed platforms (such as Java), and who
-is unaccustomed to considerations of low-level hardware details, such as cache
-coherence.
+The intended audience for this report is the graduate- or post-graduate level
+software designer who is used to working on high-level, managed platforms with
+garbage collection etc., and who is unaccustomed to considerations of low-level
+hardware details, such as cache coherence.
+
+Because some of the source code used for the benchmarks is sensitive -- it
+includes solutions to exercises used in the Practical Concurrent and
+Parallel Programming course at the IT University of Copenhagen, the source code
+is not published online, but is to be distributed with this report when prudent.
 
 \chapter{How to read this report}
 It is fair to say this report has more breadth than depth. The following
@@ -66,12 +70,13 @@ paragraphs should aid readers in deciding which chapters are relevant to them.
 Readers wishing to understand the workings and impact of false sharing should
 read section \ref{sec:caches}. Readers who wish to learn techniques for avoiding
 false sharing overhead in java should read chapter \ref{chap:javamem}. Readers
-wish to see evidence of the performance characteristics of data sharing between
-CPUs should read the experiments in chapter \ref{chap:experiments}. Readers who
-are interested only in evidence that false sharing has a performance impact may
-wish to skip most of the chapter, and focus on the uncontended- and contended-
-writes problems, as well as the k-means problem or the histogram problem for
-more practical examples.
+wish to see evidence of false sharing overhead and the performance
+characteristics of data sharing between CPUs should read the experiments in
+chapter \ref{chap:experiments}. Readers who are interested only in evidence that
+false sharing has a performance impact may wish to skip most of chapter
+\ref{chap:experiments}, and
+focus on the uncontended- and contended- writes problems, as well as the k-means
+problem or the histogram problem for a more practical example.
 
 \section{Outline}
 The following outlines the chapters of this report:\\
@@ -84,9 +89,9 @@ Chapter \ref{chap:background} summarizes previous work and relevant literature
 on false sharing, hardware design, and multicore software design in general.
 
 Chapter \ref{chap:javamem} explains how hardware cache coherence relates to the
-Java memory model, and ends by suggesting an array of techniques for
-manipulating the memory layout of java programs -- something Java provides
-little to no support for.
+Java memory model, and suggests an array of techniques for
+manipulating the memory layout of java programs to alleviate false sharing --
+something Java provides little to no support for.
 
 Chapter \ref{chap:busyness} underlines the importance of memory operations in
 regards to program performance, and elaborates on the differences in cache-friendly
@@ -95,8 +100,8 @@ design in single- and multi-core software.
 Chapter \ref{chap:method} describes the experimental setup and limitations of the
 experiments in chapter \ref{chap:experiments}.
 Chapter \ref{chap:experiments} details multicore-performance experiments with 4
-practical problems and two more contrived examples illustrating false sharing of
-cache lines.
+practical problems and two more contrived examples illustrating the performance
+impact of false sharing of cache lines.
 
-Finally, chapter \ref{chap:advice} summarizes the lessons of this project, in
-the form of a bit of advice to multicore programmers.
+Finally, chapter \ref{chap:advice} summarizes the lessons learned in this
+project, in the form of advice to multicore programmers.

@@ -1,14 +1,14 @@
 \chapter{Java and memory}
 \label{chap:javamem}
 
-As noted previously, the way programming languages model memory is very
+As previously noted, the way programming languages model memory is very
 different from how it is implemented in hardware. This is especially true for
-high-level languages, and doubly so for garbage-collected languages like Java.
+high-level languages, and doubly so for managed platforms like Java.
 
 Java programmers cannot directly control things like memory barriers and memory
 layout. Instead we get the effect of barriers through judicious use of the
 \java{synchronized} and \java{volatile} keywords, the classes in the
-\java{java.util.concurrent} package, and the guarantees given by
+\\\java{java.util.concurrent} package, and the guarantees given by
 the Java Language Specification\cite{javaspec}.
 The language specification gives no such guarantees regarding memory
 layout, making it is harder to control: We can take steps to affect how
@@ -23,7 +23,7 @@ in Java.
 
 \section{Data sharing}
 In Java, the concept of \textit{happens-before order} most closely captures the
-notion of memory barriers, in that it guarantees that memory operations are
+purpose of memory barriers, in that it guarantees that memory operations are
 visible to relevant threads/CPU-cores, and that they appear to happen in the
 expected order.
 
@@ -64,13 +64,15 @@ ourselves to updating the \java{volatile} \java{value} fields of the
 initialization of the array elements is made visible. The downside of this
 technique, besides the silly wrapper class, is that it requires more memory.
 Each \java{Holder} instance takes up 16 bytes of memory instead of the 4 bytes
-an \java{int} would have used. There is also the additional memory overhead of
-storing the object pointers in the array. Additionally, there is the performance
-cost of the added indirect, as accessing the elements now requires reading the
-object pointer from the array, and \textit{then} reading the object.
+an \java{int} would have used (we will see evidence for these numbers in the
+next section).
+There is also the additional memory overhead of storing the object pointers in
+the array. Additionally, there is the performance cost of the added indirect, as
+accessing the elements now requires reading the object pointer from the array,
+and \textit{then} reading the object.
 
 The implementers of the Java Class Library seem to favour the undocumented
-\java{sun.misc.Unsafe} class for this kind of concurrency difficulty. With
+\java{sun.misc.Unsafe} class for this kind of synchronization difficulty. With
 regard to whether the \java{Unsafe} class should be used, I will
 let the name of the class and the fact that it is an unpublished, undocumented part
 of the api speak for itself. For readers who are undeterred by such details,
@@ -82,7 +84,8 @@ about both the \java{Unsafe} class and multicore software design in
 general.
 
 To facilitate mutual exclusion, Java provides locking mechanisms through the
-\java{synchronized} keyword, and through the \java{java.util.concurrent.locks}
+\java{synchronized} keyword, and through the \\
+\java{java.util.concurrent.locks}
 package. Lock implementations vary with the underlying hardware, and are usually
 provided by the operating system. The details therefore depend on the runtime
 platform, but the use of memory barriers and compare-and-swap appears to be
@@ -100,7 +103,8 @@ Like the mechanisms provided to us, the guarantees provided by the Java memory
 model do not correspond directly to those we know from hardware. Reading
 from a \java{volatile} field ensures the visibility of updates made by other
 threads \textit{before they wrote to the same field}. With what we know from
-\cite{mckenny-barriers}, it is not clear why threads reading a different
+\cite{mckenny-barriers}, it is not clear why threads reading a
+\textit{different}
 \java{volatile} field do not get the same guarantee.
 
 The remainder of this report will nonetheless show that the hardware view taken
@@ -142,7 +146,7 @@ Let us first consider an array of primitive integers:
 
 \begin{code}[h]
 \begin{Verbatim}[frame=single]
-  int[] arr = new int[problemLength];
+  int[] arr = new int[n];
 \end{Verbatim}
 	\caption{}
 \end{code}
@@ -183,8 +187,8 @@ This may not actually be the case.
 
 \subsubsection{Padding between objects}
 Arrays of object types are a little more complicated.
-If we wish to prevent objects in an array from sharing cache lines, e.g.
-a wrapper like the \java{Holder} class, padding technique
+If we wish to prevent objects in an array from sharing cache lines -- e.g.
+when using a \java{volatile} wrapper like the \java{Holder} class -- padding technique
 \ref{padding:primitive-array} is insufficient. Unlike arrays of primitive
 types, it appears that arrays of object types do not contain the actual objects.
 Rather, they store an object pointer for each array element, pointing to the
@@ -210,7 +214,7 @@ To achieve a spaced memory layout with arrays of object types, we must pad the
   }
 \end{Verbatim}
 	\caption{Spaced allocation of an object type on the heap, and of the
-	array elements pointing to them.}
+	array elements pointing to the instances.}
 	\label{padding:object-array}
 \end{padding}
 
@@ -282,13 +286,14 @@ useful element is now accessed as \verb|arr[indirect[i]]|. This technique has th
 disadvantage of needing extra memory to store the indirection array. Array
 accesses may also get considerably slower, as the extra memory read is likely
 much more expensive than computing the index was. Depending on the access
-pattern, the cost of the extra memory read may be hidden by prefetch mechanisms.
+pattern, the cost of the extra memory read may be hidden by cache prefetch
+mechanisms.
 
-Apart from better readability, I prefer this padding techniques for many of our
-experiments, because it might introduce less noise. Certain amounts of padding,
-such as 0 or a power of two, could be optimized by the compiler or hardware. The
-cost of the extra memory access is less likely to vary with the amount of
-padding.
+In addition to the better readability, I prefer this padding technique for many
+of our experiments because it might introduce less noise. Certain amounts of
+padding, such as 0 or a power of two, could be optimized by the compiler or
+hardware. The cost of the extra memory access is less likely to vary with the
+amount of padding.
 
 In the same way we expanded padding technique \ref{padding:primitive-array} to
 work for object types, which lead us to technique \ref{padding:object-array}, we
@@ -306,8 +311,9 @@ padding inside the instances is more resistant to compaction by the garbage
 collector, as the padding will be moved along with the object instance. It also
 makes code using the objects clearer by abstracting the use of padding into the
 class definition. On the other hand, we may still need to pad data structures
-used to contain the instances, and having unused fields in class definitions is
-not necessarily clearer than using padding when allocating the instances.
+used to contain the instances, and having unused fields in class definitions
+will not necessarily be clearer than using padding when allocating the
+instances.
 
 To leverage object field layout for padding, we need to understand how
 objects are laid out in memory. To this end, we rely on the aforementioned
@@ -318,9 +324,9 @@ tell us very little about memory layout. JOL works by instantiating classes and
 analysing them at runtime, allowing us to see how they are actually laid out.
 
 Running JOL's internals command against \java{java.lang.Object} gives the
-following output:
+output shown in figure \ref{jol:object}.
 
-\begin{figure}[h]
+\begin{figure}
 \begin{Verbatim}[frame=single, numbers=left]
 # Running 64-bit HotSpot VM.
 # Using compressed oop with 0-bit shift.
@@ -342,13 +348,15 @@ Instance size: 16 bytes
 Space losses: 0 bytes internal + 4 bytes external = 4
 bytes total
 \end{Verbatim}
+	\caption{}
+	\label{jol:object}
 \end{figure}
 
 An additional VALUE column has been omitted to save space.
 
 There is a lot of useful information in the output. Let us dissect some of it
-before we move on to object padding.
-The first line tells that we are running the HotSpot JVM on a 64-bit machine.
+before we move on to padding the objects.
+The first line tells us that we are running the HotSpot JVM on a 64-bit machine.
 The second line tells us that ordinary object pointers (oop) are compressed,
 with 0-bit shift. Compression and shifting are techniques used by the JVM to
 save space. The details of these techniques are not pertinent to our work, so we will suffice
@@ -362,7 +370,7 @@ footprint. We can see from the output that an \java{Object} instance takes up 16
 bytes on the heap, of which 12 are the object headers, and 4 are padding added
 so that the next item on the heap will be 8 byte aligned. This is why instances
 of the \java{Holder} class from earlier do not need more space than
-\java{Object} instances. The \java{int} field fills out the 4 bytes used for 8 byte
+\java{Object} instances: The \java{int} field fills out the 4 bytes used for 8 byte
 alignment for \java{Object}.
 
 Now that we have familiarized ourselves with JOL's output, let us take a look at
@@ -399,11 +407,13 @@ Instance size: 40 bytes
 Space losses: 0 bytes internal + 4 bytes external = 4
 bytes total
 \end{Verbatim}
+	\caption{JOL output for the unpadded \java{NormalCluster} class}
+	\label{jol:normalcluster}
 \end{figure}
 
 Code snippet \ref{code:normalcluster} shows the field declarations of the
-\java{NormalCluster} class. These fields are in all our cluster implementations;
-they only differ by how many unused padding fields they contain.
+\java{NormalCluster} class. All of our cluster implementations contain these
+fields. They only differ by how many unused padding fields they contain.
 
 As is made clear in \cite{mystery}, and as will be reiterated in chapter
 \ref{chap:experiments}, we want to make sure that different \java{Cluster}
@@ -412,16 +422,16 @@ ideally like to have the \java{count}, \java{sumx}, and \java{sumy} fields
 together in a single cache line, and the \java{mean} field in it's own
 cache line, separate from the other fields.
 
-The output from JOL shows us that all four fields are stored in a contiguous
-memory section of 28 bytes, followd by 4 bytes for alignment. Accounting for 8 byte alignment and object headers
+The output from JOL, shown in figure \ref{jol:normalcluster}, shows us that all four fields are stored in a contiguous
+memory section of 28 bytes, followed by 4 bytes for alignment. Accounting for 8 byte alignment and object headers
 this means that, in the worst case, we can have all the fields of one
 \java{Cluster} instance plus the \java{count}, \java{sumx}, and \java{sumy}
 fields of another instance in the same 64-byte cache line.
 
 It seems that Java runtimes in general follow the same strategy for laying out
 object fields. Assuming 8 byte alignment: Fields are arranged in descending
-order of size. The sort appears to be stable, the field order in the source code
-matters. If the fields are not 8 byte aligned -- due to the size of the object
+order of size. The sort appears to be stable, so the field order in the source code
+matters to some extent. If the field segment is not 8 byte aligned -- due to the size of the object
 headers not being a multiple of 8 bytes -- a 4 byte field is moved ahead of the
 other fields if one exists. That way, the rest of the fields are 8 byte aligned.
 We see this in the JOL output for the \java{NormalCluster} class, where
@@ -589,7 +599,8 @@ bytes total
 \end{padding}
 
 Finally, padding technique \ref{padding:contended} uses an undocumented
-annotation \java{sun.misc.Contended} for this exact purpose. It is undocumented,
+annotation\\
+\java{sun.misc.Contended} for this exact purpose. It is undocumented,
 so there is no guarantee it will work on any particular Java runtime, or that it
 won't be removed in the future. However, this is true for all the padding
 techniques we have examined. Using the \java{@Contended} annotation yields a
@@ -598,7 +609,9 @@ removed in a future release". It is not clear if using the annotation affects
 licensing.
 
 A clear disadvantage of this technique is that we have no control over the
-amount of padding used.
+amount of padding used. Advantages of this technique is that the runtime
+platform can clearly see that we intend to use padding, and may prevent the
+garbage collector from compacting our memory layout.
 
 JOL's internals command does not show any results of using the \java{@Contended}
 annotation, but the output of the estimates command can be seen in figure

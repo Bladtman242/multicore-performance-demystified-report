@@ -11,20 +11,26 @@ Turbo Boost, with L1, L2, and L3 cache sizes of 32KiB, 256KiB, and 3072KiB
 respectively. The CPU has 2 physical cores, 4 virtual cores with
 hyper-threading.
 \item [i7] A Desktop with an Intel i7-4790 CPU, rated at 3.6Ghz, 4.0GHz with Intel
-Turbo Boost, with L1, L2, and L3 cache sizes of 32KiB, 256KiB, and 3072KiB
+Turbo Boost, with L1, L2, and L3 cache sizes of 32KiB, 256KiB, and 8192KiB
 respectively. The CPU has 4 physical cores, 8 virtual cores with
 hyper-threading.
 \item [Xeon] A server with \textbf{two} Intel Xeon E5-2680 v3 CPUs each rated at
 2.5Ghz, 3.3 with Intel Turbo Boost, with L1, L2, and L3 cache sizes of 32KiB,
-256KiB, and 3072KiB respectively, for a total of 60MiB of cache. Each CPU has 12
+256KiB, and 30720KiB respectively, for a total of 60MiB of cache. Each CPU has 12
 physical cores, 24 virtual cores with hyper-threading, for at total of 48 virtual cores.
 \end{description}
 
-The i5 and i7 platforms run Arch Linux, and experiments are performed on the OpenJDK
-Runtime Environment, version 1.8.0\_172. The Xeon platform runs Windows 10, end
-between the OpenJDK and Oracle platforms, but it lets us see that 
-experiments are run on the Oracle Java(TM) SE Runtime Environment, version
+The i5 and i7 platforms run Arch Linux, and experiments are performed on the
+OpenJDK Runtime Environment, version 1.8.0\_172. The Xeon platform runs Windows
+10, and experiments are run on the Oracle Java(TM) SE Runtime Environment, version
 1.8.0\_144.
+
+All platforms run 64-bit versions of Java.
+
+Using OpenJDK on two platforms and Oracle's runtime on the third is not quite
+rigid enough to show us the differences there may be between the two runtimes,
+but it lets us see that our observations and techniques a valid for both of
+them.
 
 Benchmarks are run using the \java{mark8} method from \citeauthor{microbmarks}'s
 microbenchmarking framework \cite{microbmarks}, adapted to include a warm-up
@@ -36,7 +42,8 @@ operations. Instead, we benchmark multiple variations of the same programs, and
 attempt to interpret the results in terms of the variations. This involves a
 certain amount of guesswork, and we cannot be sure that the differences between
 two implementations do not effect unintended changes to the runtime behaviour.
-Similarly, we cannot know the actual memory layout at runtime. We can only guess
+Similarly, we cannot know the actual memory layout at runtime, due to the
+possibility of heap-fragmentation etc. We can only guess
 the layout effects of our optimizations, and see if our results agree
 with our assumptions about the memory layout.
 
